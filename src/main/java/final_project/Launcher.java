@@ -1,7 +1,8 @@
-package cs505cep;
+package final_project;
 
-import cs505cep.CEP.CEPEngine;
-import cs505cep.httpfilters.AuthenticationFilter;
+import final_project.CEP.CEPEngine;
+import final_project.httpfilters.AuthenticationFilter;
+import final_project.Utils;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
@@ -62,16 +63,16 @@ public class Launcher {
     private static void startServer() throws IOException {
 
         final ResourceConfig rc = new ResourceConfig()
-        .packages("cs505cep.httpcontrollers")
+        .packages("final_project.httpcontrollers")
         .register(AuthenticationFilter.class);
 
-        System.out.println("Starting Web Server...");
+        System.out.println(Utils.Color.YELLOW + "Starting Web Server..." + Utils.Color.RESET);
         URI BASE_URI = UriBuilder.fromUri("http://0.0.0.0/").port(WEB_PORT).build();
         HttpServer httpServer = GrizzlyHttpServerFactory.createHttpServer(BASE_URI, rc);
 
         try {
             httpServer.start();
-            System.out.println("Web Server Started...");
+            System.out.println(Utils.Color.GREEN + "Web Server Started..." + Utils.Color.RESET);
         } catch (IOException e) {
             e.printStackTrace();
         }

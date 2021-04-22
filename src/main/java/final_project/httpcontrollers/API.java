@@ -1,8 +1,8 @@
-package cs505cep.httpcontrollers;
+package final_project.httpcontrollers;
 
 import com.google.gson.Gson;
-import cs505cep.CEP.accessRecord;
-import cs505cep.Launcher;
+import final_project.CEP.accessRecord;
+import final_project.Launcher;
 
 import javax.inject.Inject;
 import javax.ws.rs.*;
@@ -25,45 +25,32 @@ public class API {
         gson = new Gson();
     }
 
-    //check local
-    //curl --header "X-Auth-API-key:1234" "http://localhost:9000/api/checkmycep"
-
-    //check remote
-    //curl --header "X-Auth-API-key:1234" "http://[linkblueid].cs.uky.edu:8082/api/checkmycep"
-    //curl --header "X-Auth-API-key:1234" "http://localhost:9000/api/checkmycep"
-
-    //check remote
-    //curl --header "X-Auth-API-key:1234" "http://[linkblueid].cs.uky.edu:9000/api/checkmycep"
+    private void logToConsole(String apiCalled){
+        //get remote ip address from request
+        String remoteIP = request.get().getRemoteAddr();
+        //get the timestamp of the request
+        long access_ts = System.currentTimeMillis();
+        System.out.println("IP: " + remoteIP + "\tTimestamp: " + access_ts + "\tAPI: " + apiCalled);
+    }
 
     @GET
-    @Path("/checkmycep")
+    @Path("/getteam")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response checkMyEndpoint(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response MF1(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
         try {
-
-            //get remote ip address from request
-            String remoteIP = request.get().getRemoteAddr();
-            //get the timestamp of the request
-            long access_ts = System.currentTimeMillis();
-            System.out.println("IP: " + remoteIP + " Timestamp: " + access_ts);
-
+            logToConsole("MF1");
+            
             Map<String,String> responseMap = new HashMap<>();
-            if(Launcher.cepEngine != null) {
-
-                    responseMap.put("success", Boolean.TRUE.toString());
-                    responseMap.put("status_desc","CEP Engine exists");
-
-            } else {
-                responseMap.put("success", Boolean.FALSE.toString());
-                responseMap.put("status_desc","CEP Engine is null!");
-            }
+            responseMap.put("team_name", "CEB: complex event brocessors");
+            responseMap.put("team_member_sids", "[\"12257232\", \"12142047\"]");
+            //TODO: logic for if app is on or off
+            responseMap.put("app_status_code","0");
 
             responseString = gson.toJson(responseMap);
 
 
         } catch (Exception ex) {
-
             StringWriter sw = new StringWriter();
             ex.printStackTrace(new PrintWriter(sw));
             String exceptionAsString = sw.toString();
@@ -110,6 +97,5 @@ public class API {
         }
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
-
 
 }

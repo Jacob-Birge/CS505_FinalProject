@@ -1,7 +1,7 @@
-package cs505cep.httpfilters;
+package final_project.httpfilters;
 
 
-import cs505cep.Launcher;
+import final_project.Launcher;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;

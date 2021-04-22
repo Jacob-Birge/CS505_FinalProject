@@ -1,3 +1,4 @@
-mvn clean package
+clear
+mvn clean package -q
 cd target
-java -Djava.net.preferIPv4Stack=true -jar cs505-cep-template-1.0-SNAPSHOT.jar
+java -Djava.net.preferIPv4Stack=true -jar final_project-1.0-SNAPSHOT.jar

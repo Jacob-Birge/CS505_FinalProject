@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>edu.uky</groupId>
-    <artifactId>cs505-cep-template</artifactId>
+    <artifactId>final_project</artifactId>
     <version>1.0-SNAPSHOT</version>
 
 
     <properties>
-        <jarName>cep-web</jarName>
-        <mainClass>cs505cep.Launcher</mainClass>
+        <jarName>final_project_web</jarName>
+        <mainClass>final_project.Launcher</mainClass>
         <jersey.version>2.22.2</jersey.version>
         <derby.version>10.14.2.0</derby.version>
         <jdk>1.8</jdk>
@@ -131,7 +131,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>cs505cep.Launcher</mainClass>
+                            <mainClass>final_project.Launcher</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
