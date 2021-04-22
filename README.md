@@ -1,4 +1,4 @@
-# cs505-cep-template
+# CS505_FinalProject
 
 ## Building and running package
 The class VM has Java but not Maven, which is used for building the package.  
@@ -10,7 +10,7 @@ sudo apt install maven -y
 
 Then run ./run.sh to build and start the package.
 
-You will see lots of output the first time you build the package, as Maven is pulling down all dependencies.  The process will build a Java Jar located in the target directory (cs505-embedded-template/target/cs505-embedded-template-1.0-SNAPSHOT.jar)
+You will see lots of output the first time you build the package, as Maven is pulling down all dependencies.  The process will build a Java Jar located in the target directory (CS505_FinalProject/target/final_project-1.0-SNAPSHOT.jar)
 
 Once built you will see something like this:
 
@@ -30,8 +30,8 @@ Once built you will see something like this:
 Curl can be used to check that your API and database is responding:
 *Note the use of a required security header
 ```
-curl -H "X-Auth-API-Key: 12463865" http://localhost:9000/api/checkmycep
-{"status_desc":"CEP Engine exists","success":"true"}
+curl -H "X-Auth-API-Key: 12463865" http://localhost:9000/api/getteam
+{"app_status_code":"0","team_name":"CEB: complex event brocessors","team_member_sids":"[\"1234\", \"1234\"]"}
 ```
 ---
 
