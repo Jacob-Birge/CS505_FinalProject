@@ -39,7 +39,7 @@ public class API {
     public Response MF1(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
         try {
-            logToConsole("MF1");
+            logToConsole("getteam");
             
             Map<String,String> responseMap = new HashMap<>();
             responseMap.put("team_name", "CEB: complex event brocessors");
@@ -62,32 +62,20 @@ public class API {
     }
 
     @GET
-    @Path("/getaccesscount")
+    @Path("/reset")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getAccessCount(@HeaderParam("X-Auth-API-Key") String authKey) {
+    //TODO:
+    public Response MF2(@HeaderParam("X-Auth-API-Key") String authKey) {
         String responseString = "{}";
         try {
-
-            //get remote ip address from request
-            String remoteIP = request.get().getRemoteAddr();
-            //get the timestamp of the request
-            long access_ts = System.currentTimeMillis();
-            System.out.println("IP: " + remoteIP + " Timestamp: " + access_ts);
-
-            //generate event based on access
-            String inputEvent = gson.toJson(new accessRecord(remoteIP,access_ts));
-            System.out.println("inputEvent: " + inputEvent);
-
-            //send input event to CEP
-            Launcher.cepEngine.input(Launcher.inputStreamName, inputEvent);
+            logToConsole("reset");
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();
-            responseMap.put("accesscoint",String.valueOf(Launcher.accessCount));
+            responseMap.put("reset_status_code", "0");
             responseString = gson.toJson(responseMap);
 
         } catch (Exception ex) {
-
             StringWriter sw = new StringWriter();
             ex.printStackTrace(new PrintWriter(sw));
             String exceptionAsString = sw.toString();
