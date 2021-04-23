@@ -16,7 +16,6 @@ public class AuthenticationFilter implements ContainerRequestFilter {
     @Override
     public void filter(ContainerRequestContext requestContext) {
         try {
-
             // Then check is the service key exists and is valid.
             String serviceKey = requestContext.getHeaderString("X-Auth-API-Key");
             if (serviceKey != null) {
@@ -27,7 +26,8 @@ public class AuthenticationFilter implements ContainerRequestFilter {
                     requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("[" + serviceKey + "] Must not be 0!\n").build());
                 }
             } else {
-                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Header: X-Auth-API-Key NOT FOUND!\n").build());
+                return;
+                //requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).entity("Header: X-Auth-API-Key NOT FOUND!\n").build());
             }
 
         } catch (Exception e) {
