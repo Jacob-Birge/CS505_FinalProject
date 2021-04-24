@@ -1,5 +1,8 @@
 package final_project.Topics;
 
+import final_project.Utils;
+import final_project.Utils.Color;
+
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.rabbitmq.client.Channel;
@@ -34,6 +37,7 @@ public class TopicConnector {
             String virtualhost = "3";
 
             ConnectionFactory factory = new ConnectionFactory();
+            factory.setRequestedHeartbeat(60);
             factory.setHost(hostname);
             factory.setUsername(username);
             factory.setPassword(password);
@@ -47,22 +51,20 @@ public class TopicConnector {
             channel.queueBind(queueName, EXCHANGE_NAME, "#");
 
 
-            System.out.println(" [*] Waiting for messages. To exit press CTRL+C");
+            System.out.println(Color.BLUE+"[*] Waiting for messages. To exit press CTRL+C"+Color.RESET);
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
 
                 String message = new String(delivery.getBody(), "UTF-8");
-                System.out.println(" [x] Received Batch'" +
-                        delivery.getEnvelope().getRoutingKey() + "':'" + message + "'");
+                System.out.println(Color.BLUE+"[x] Received Batch '"+Color.RESET +
+                        delivery.getEnvelope().getRoutingKey() + "':");
 
                 List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
                 for(Map<String,String> map : incomingList) {
-                    System.out.println("INPUT CEP EVENT: " +  map);
+                    System.out.println(Color.PURPLE+"INPUT CEP EVENT: "+Color.RESET +  map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
                 System.out.println("");
-                System.out.println("");
-
             };
 
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {

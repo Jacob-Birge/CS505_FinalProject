@@ -1,6 +1,7 @@
 package final_project.CEP;
 
 import final_project.Launcher;
+import final_project.Utils.Color;
 import io.siddhi.core.util.transport.InMemoryBroker;
 
 public class OutputSubscriber implements InMemoryBroker.Subscriber {
@@ -15,7 +16,8 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
     public void onMessage(Object msg) {
 
         try {
-            System.out.println("OUTPUT EVENT: " + msg);
+            System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msg);
+            System.out.println("");
             //String[] sstr = String.valueOf(msg).split(":");
             //String[] outval = sstr[2].split("}");
             //Launcher.accessCount = Double.parseDouble(outval[0]);
