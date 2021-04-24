@@ -1,6 +1,7 @@
 package final_project;
 
 import final_project.CEP.CEPEngine;
+import final_project.Topics.TopicConnector;
 import final_project.httpfilters.AuthenticationFilter;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
@@ -18,6 +19,7 @@ public class Launcher {
     public static String inputStreamName = null;
     public static double accessCount = -1;
 
+    public static TopicConnector topicConnector;
 
     public static CEPEngine cepEngine = null;
 
@@ -28,23 +30,28 @@ public class Launcher {
         //Embedded database initialization
         cepEngine = new CEPEngine();
 
-        inputStreamName = "AccessStream";
-        String inputStreamAttributesString = "remote_ip string, timestamp long";
+        //START MODIFY
+        inputStreamName = "PatientInStream";
+        String inputStreamAttributesString = "first_name string, last_name string, mrn string, zip_code string, patient_status_code string";
 
-        String outputStreamName = "CountStream";
-        String outputStreamAttributesString = "count double";
+        String outputStreamName = "PatientOutStream";
+        String outputStreamAttributesString = "patient_status_code string, count long";
 
         String queryString = " " +
-                "from " + inputStreamName +
-                "#window.time(10 sec) select avg(count()) as count " +
-                "insert into " + outputStreamName + "; ";
+                "from PatientInStream#window.timeBatch(5 sec) " +
+                "select patient_status_code, count() as count " +
+                "group by patient_status_code " +
+                "insert into PatientOutStream; ";
 
-        System.out.println(queryString);
+        //END MODIFY
 
         cepEngine.createCEP(inputStreamName, outputStreamName, inputStreamAttributesString, outputStreamAttributesString, queryString);
 
         System.out.println("CEP Started...");
-
+        
+        //starting Collector
+        topicConnector = new TopicConnector();
+        topicConnector.connect();
 
         //Embedded HTTP initialization
         startServer();
