@@ -253,7 +253,7 @@ public class API {
     }
 
     @GET
-    @Path("/gethospital")
+    @Path("/gethospital/{id}")
     @Produces(MediaType.APPLICATION_JSON)
     //TODO:
     /**
@@ -263,7 +263,7 @@ public class API {
      * @return avalable_beds = available number of beds
      * @return zipcode = zipcode of hospital
      */
-    public Response OF3(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response OF3(@HeaderParam("X-Auth-API-Key") String authKey, @PathParam("id") String id) {
         String responseString = "{}";
         try {
             logToConsole("gethospital");
