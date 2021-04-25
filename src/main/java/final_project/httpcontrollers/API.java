@@ -268,16 +268,11 @@ public class API {
         try {
             logToConsole("gethospital");
 
-            Integer totBeds = 0;
-            Integer availBeds = 0;
-            Integer zipcode = 0;
+            Map<String, String> hospitalInfo = new HashMap<>();
+            hospitalInfo = getHospitalInfo(id);
 
             //generate a response
-            Map<String,String> responseMap = new HashMap<>();
-            responseMap.put("total_beds", totBeds.toString());
-            responseMap.put("avalable_beds", availBeds.toString());
-            responseMap.put("zipcode", zipcode.toString());
-            responseString = gson.toJson(responseMap);
+            responseString = gson.toJson(hospitalInfo);
 
         } catch (Exception ex) {
             StringWriter sw = new StringWriter();

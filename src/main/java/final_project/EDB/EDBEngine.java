@@ -166,6 +166,24 @@ public class EDBEngine {
         } catch(Exception ex) {
             ex.printStackTrace();
         }
+        createRNode = "CREATE TABLE PATIENTINFO" +
+                "(" +
+                "   first_name VARCHAR(255)," +
+                "   last_name VARCHAR(255)," +
+                "   mrn VARCHAR(255)," +
+                "   zipcode VARCHAR(255)," +
+                "   patient_status_code VARCHAR(255)" +
+                ")";
+
+        try {
+            try(Connection conn = ds.getConnection()) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(createRNode);
+                }
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
     void delete(File f) throws IOException {
@@ -267,40 +285,44 @@ public class EDBEngine {
         return exist;
     }
 
-    public List<Map<String,String>> getAccessLogs() {
-        List<Map<String,String>> accessMapList = null;
+    public Map<String,String> getHospitalInfo(int ID) {
+        Map<String,String> responseMap = null;
         try {
-
-            accessMapList = new ArrayList<>();
-
-            Type type = new TypeToken<Map<String, String>>(){}.getType();
+            responseMap = new HashMap<>();
+            //Type type = new TypeToken<Map<String, String>>(){}.getType();
 
             String queryString = null;
 
             //fill in the query
-            queryString = "SELECT * FROM accesslog";
+            queryString = "SELECT * FROM APP.HOSPITALS WHERE id = " + ID;
 
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
-
                     try(ResultSet rs = stmt.executeQuery(queryString)) {
 
                         while (rs.next()) {
                             Map<String, String> accessMap = new HashMap<>();
-                            accessMap.put("remote_ip", rs.getString("remote_ip"));
-                            accessMap.put("access_ts", rs.getString("access_ts"));
-                            accessMapList.add(accessMap);
+                            Integer totBeds = 0;
+                            Integer availBeds = 0;
+                            Integer zipcode = 0;
+                            responseMap.put("total_beds", rs.getString("beds"));
+                            // responseMap.put("avalable_beds", rs.getString("access_ts"));
+                            // responseMap.put("zipcode", rs.getString());
                         }
 
                     }
                 }
             }
+            
+            // responseMap.put("total_beds", totBeds.toString());
+            // responseMap.put("avalable_beds", availBeds.toString());
+            // responseMap.put("zipcode", zipcode.toString());
 
         } catch(Exception ex) {
             ex.printStackTrace();
         }
 
-        return accessMapList;
+        return reponseMap;
     }
 
     public Map<String, Integer> getAccessLogCount(){
