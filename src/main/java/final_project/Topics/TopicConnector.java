@@ -18,6 +18,7 @@ import java.util.Map;
 public class TopicConnector {
     private Gson gson;
     final Type typeOf = new TypeToken<List<Map<String,String>>>(){}.getType();
+    private final Integer maxNumTuples = 1000;
 
     private String EXCHANGE_NAME = "patient_data";
 
@@ -46,18 +47,36 @@ public class TopicConnector {
 
             channel.queueBind(queueName, EXCHANGE_NAME, "#");
 
-
-            System.out.println("[*] Waiting for messages. To exit press CTRL+C");
-
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
                 String message = new String(delivery.getBody(), "UTF-8");
-                System.out.println(Utils.Color.BLUE+"[x] Received Batch '"+Utils.Color.RESET +
-                        delivery.getEnvelope().getRoutingKey() + "':");
 
                 List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
+                System.out.println(Utils.Color.BLUE+"[x] Received Batch"+Utils.Color.RESET + " '" +
+                        delivery.getEnvelope().getRoutingKey() + "':"+incomingList.size());
                 for(Map<String,String> map : incomingList) {
                     System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET +  map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
+                }
+                String queryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code) VALUES ";
+                String insertTuples = "";
+                Integer numTuples = 0;
+                for(Map<String,String> map : incomingList) {
+                    if (insertTuples != "")
+                        insertTuples += ",";
+                    insertTuples += "('"+map.get("first_name")+"','"+map.get("last_name")+"','"+map.get("mrn")+"','"+map.get("zip_code")+"','"+map.get("patient_status_code")+"')";
+                    numTuples++;
+                    if (numTuples >= maxNumTuples){
+                        String insertQuery = queryBegin + insertTuples;
+                        Launcher.edbEngine.executeUpdate(insertQuery);
+                        insertTuples = "";
+                        numTuples = 0;
+                    }
+                }
+                if (numTuples > 0){
+                    String insertQuery = queryBegin + insertTuples;
+                    Launcher.edbEngine.executeUpdate(insertQuery);
+                    insertTuples = "";
+                    numTuples = 0;
                 }
                 System.out.println("");
             };
