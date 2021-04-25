@@ -1,7 +1,6 @@
 package final_project.Topics;
 
 import final_project.Utils;
-import final_project.Utils.Color;
 
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
@@ -17,7 +16,6 @@ import java.util.Map;
 
 
 public class TopicConnector {
-
     private Gson gson;
     final Type typeOf = new TypeToken<List<Map<String,String>>>(){}.getType();
 
@@ -28,16 +26,14 @@ public class TopicConnector {
     }
 
     public void connect() {
-
         try {
-
             String hostname = "128.163.202.50";
             String username = "student";
             String password = "student01";
             String virtualhost = "3";
 
             ConnectionFactory factory = new ConnectionFactory();
-            factory.setRequestedHeartbeat(60);
+            factory.setRequestedHeartbeat(30);
             factory.setHost(hostname);
             factory.setUsername(username);
             factory.setPassword(password);
@@ -51,17 +47,16 @@ public class TopicConnector {
             channel.queueBind(queueName, EXCHANGE_NAME, "#");
 
 
-            System.out.println(Color.BLUE+"[*] Waiting for messages. To exit press CTRL+C"+Color.RESET);
+            System.out.println("[*] Waiting for messages. To exit press CTRL+C");
 
             DeliverCallback deliverCallback = (consumerTag, delivery) -> {
-
                 String message = new String(delivery.getBody(), "UTF-8");
-                System.out.println(Color.BLUE+"[x] Received Batch '"+Color.RESET +
+                System.out.println(Utils.Color.BLUE+"[x] Received Batch '"+Utils.Color.RESET +
                         delivery.getEnvelope().getRoutingKey() + "':");
 
                 List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
                 for(Map<String,String> map : incomingList) {
-                    System.out.println(Color.PURPLE+"INPUT CEP EVENT: "+Color.RESET +  map);
+                    System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET +  map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
                 System.out.println("");

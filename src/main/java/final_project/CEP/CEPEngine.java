@@ -20,7 +20,6 @@ public class CEPEngine {
     private Gson gson;
 
     public CEPEngine() {
-
         Class JsonClassSource = null;
         Class JsonClassSink = null;
 
@@ -47,11 +46,8 @@ public class CEPEngine {
         gson = new Gson();
     }
 
-
     public void createCEP(String inputStreamName, String outputStreamName, String inputStreamAttributesString, String outputStreamAttributesString,String queryString) {
-
         try {
-
             String inputTopic = UUID.randomUUID().toString();
             String outputTopic = UUID.randomUUID().toString();
 
@@ -82,28 +78,22 @@ public class CEPEngine {
 
     public void input(String streamName, String jsonPayload) {
         try {
-
             if (topicMap.containsKey(streamName)) {
                 //InMemoryBroker.publish(topicMap.get(streamName), getByteGenericDataRecordFromString(schemaMap.get(streamName),jsonPayload));
                 InMemoryBroker.publish(topicMap.get(streamName), jsonPayload);
-
             } else {
                 System.out.println("input error : no schema");
             }
-
         } catch(Exception ex) {
             ex.printStackTrace();
         }
     }
 
-
     private String getSourceString(String inputStreamAttributesString, String topic, String streamName) {
         String sourceString = null;
         try {
-
             sourceString  = "@source(type='inMemory', topic='" + topic + "', @map(type='json')) " +
                     "define stream " + streamName + " (" + inputStreamAttributesString + "); ";
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -114,14 +104,11 @@ public class CEPEngine {
     private String getSinkString(String topic, String streamName, String outputSchemaString) {
         String sinkString = null;
         try {
-
             sinkString = "@sink(type='inMemory', topic='" + topic + "', @map(type='json')) " +
                     "define stream " + streamName + " (" + outputSchemaString + "); ";
-
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-
         return sinkString;
     }
 
