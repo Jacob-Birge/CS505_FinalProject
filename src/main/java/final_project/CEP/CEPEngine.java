@@ -16,9 +16,6 @@ public class CEPEngine {
     private SiddhiAppRuntime siddhiAppRuntime;
     private Map<String,String> topicMap;
 
-
-    private Gson gson;
-
     public CEPEngine() {
         Class JsonClassSource = null;
         Class JsonClassSink = null;
@@ -43,7 +40,6 @@ public class CEPEngine {
         siddhiManager = new SiddhiManager();
         siddhiManager.setExtension("sourceMapper:json",JsonClassSource);
         siddhiManager.setExtension("sinkMapper:json",JsonClassSink);
-        gson = new Gson();
     }
 
     public void createCEP(String inputStreamName, String outputStreamName, String inputStreamAttributesString, String outputStreamAttributesString,String queryString) {
@@ -79,7 +75,6 @@ public class CEPEngine {
     public void input(String streamName, String jsonPayload) {
         try {
             if (topicMap.containsKey(streamName)) {
-                //InMemoryBroker.publish(topicMap.get(streamName), getByteGenericDataRecordFromString(schemaMap.get(streamName),jsonPayload));
                 InMemoryBroker.publish(topicMap.get(streamName), jsonPayload);
             } else {
                 System.out.println("input error : no schema");

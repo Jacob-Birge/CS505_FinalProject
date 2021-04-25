@@ -26,14 +26,11 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
     public void onMessage(Object msg) {
         try {
             System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msg);
-            List<Map<String,Map<String,Object>>> msgList = gson.fromJson((String)msg, typeOf);
+            /*List<Map<String,Map<String,Object>>> msgList = gson.fromJson((String)msg, typeOf);
             for(Map<String,Map<String,Object>> map : msgList) {
                 System.out.println(Color.PURPLE+"OUTPUT CEP EVENT: "+Color.RESET +  map.get("event").get("count"));
-            }
+            }*/
             System.out.println("");
-            //String[] sstr = String.valueOf(msg).split(":");
-            //String[] outval = sstr[2].split("}");
-            //Launcher.accessCount = Double.parseDouble(outval[0]);
         } catch(Exception ex) {
             ex.printStackTrace();
         }
