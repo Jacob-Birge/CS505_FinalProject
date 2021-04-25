@@ -154,7 +154,8 @@ public class EDBEngine {
                 "   website VARCHAR(255)," +
                 "   owner VARCHAR(255)," +
                 "   trauma VARCHAR(255)," +
-                "   helipad VARCHAR(255)" +
+                "   helipad VARCHAR(255)," +
+                "   used_beds INTEGER" +
                 ")";
 
         try {
@@ -290,11 +291,38 @@ public class EDBEngine {
         Map<String,String> responseMap = null;
         
         try {
-            String query 
+            String queryString = null;
+            String availableBedQuery = null;
+
+            queryString =   "SELECT (SELECT h.id AS hid, h.beds AS totbeds, p.mrn AS pmrn FROM APP.HOSPITALS AS h " +
+                            "JOIN APP.PATIENTINFO AS p ON h.zip = p.zipcode WHERE p.patient_status_code != 0) ";
+            try(Connection conn = ds.getConnection()) {
+                try (Statement stmt = conn.createStatement()) {
+                    try(ResultSet rs = stmt.executeQuery(queryString)) {
+                        while (rs.next()) {
+                            String currentHospital = rs.getString("id");
+                            availableBedQuery = "SELECT COUNT(*) FROM APP.PATIENTINFO WHERE hospital_id = " + currentHospital;
+                            try(Connection con = ds.getConnection()) {
+                                try (Statement stamt = con.createStatement()) {
+                                    try(ResultSet rst = stamt.executeQuery(availableBedQuery)) {
+                                        while(rst.next()){
+                                            System.out.print(rst.getInt("COUNT(*)"));
+                                        }
+                                    }
+                                }
+                            }
+
+                            //if (rs.getString("beds"))
+                        }
+                    }
+                }
+            }
+        } catch(Exception ex) {
+            ex.printStackTrace();
         }
     }
 
-    public Map<String,String> getHospitalInfo(int ID) {
+    public Map<String,String> getHospitalInfo(String ID) {
         Map<String,String> responseMap = null;
         try {
             responseMap = new HashMap<>();
@@ -333,7 +361,7 @@ public class EDBEngine {
             ex.printStackTrace();
         }
 
-        return reponseMap;
+        return responseMap;
     }
 
     public Map<String, Integer> getAccessLogCount(){
