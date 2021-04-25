@@ -173,6 +173,7 @@ public class EDBEngine {
                 "   mrn VARCHAR(255)," +
                 "   zipcode VARCHAR(255)," +
                 "   patient_status_code VARCHAR(255)" +
+                "   hospital_id BIGINT" +
                 ")";
 
         try {
@@ -285,6 +286,14 @@ public class EDBEngine {
         return exist;
     }
 
+    public void assignPatient(String mrn) {
+        Map<String,String> responseMap = null;
+        
+        try {
+            String query 
+        }
+    }
+
     public Map<String,String> getHospitalInfo(int ID) {
         Map<String,String> responseMap = null;
         try {
@@ -292,9 +301,11 @@ public class EDBEngine {
             //Type type = new TypeToken<Map<String, String>>(){}.getType();
 
             String queryString = null;
+            String bedString = null;
 
             //fill in the query
             queryString = "SELECT * FROM APP.HOSPITALS WHERE id = " + ID;
+            // bedString = "SELECT * FROM APP.PATIENTINFO WHERE "
 
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {

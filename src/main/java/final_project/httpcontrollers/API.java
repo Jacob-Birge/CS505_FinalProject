@@ -218,7 +218,7 @@ public class API {
     }
 
     @GET
-    @Path("/getpatient")
+    @Path("/getpatient/{mrn}")
     @Produces(MediaType.APPLICATION_JSON)
     //TODO:
     /**
@@ -227,12 +227,13 @@ public class API {
      * @return mrn = medical record number
      * @return location_code = hospital ID, ID = 0 for home assignment, ID=-1 for no assignment
      */
-    public Response OF2(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response OF2(@HeaderParam("X-Auth-API-Key") String authKey, @PathParam("mrn") String mrn) {
         String responseString = "{}";
         try {
             logToConsole("getpatient");
 
-            String mrn = "";
+            assignPatient(mrn);
+            // String mrn = "";
             Integer locationCode = -1;
 
             //generate a response
