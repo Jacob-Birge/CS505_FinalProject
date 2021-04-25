@@ -172,7 +172,7 @@ public class EDBEngine {
                 "   last_name VARCHAR(255)," +
                 "   mrn VARCHAR(255)," +
                 "   zipcode VARCHAR(255)," +
-                "   patient_status_code VARCHAR(255)" +
+                "   patient_status_code VARCHAR(255)," +
                 "   hospital_id BIGINT" +
                 ")";
 
