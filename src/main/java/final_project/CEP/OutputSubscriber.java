@@ -14,23 +14,33 @@ import io.siddhi.core.util.transport.InMemoryBroker;
 
 public class OutputSubscriber implements InMemoryBroker.Subscriber {
     private String topic;
+    private String streamName;
     private Gson gson;
-    final Type typeOf = new TypeToken<List<Map<String,Map<String,Object>>>>(){}.getType();
+    final Type typeOf = new TypeToken<Map<String,Map<String,Object>>>(){}.getType();
 
     public OutputSubscriber(String topic, String streamName) {
         this.topic = topic;
+        this.streamName = streamName;
         gson = new Gson();
     }
 
     @Override
     public void onMessage(Object msg) {
         try {
-            System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msg);
-            /*List<Map<String,Map<String,Object>>> msgList = gson.fromJson((String)msg, typeOf);
-            for(Map<String,Map<String,Object>> map : msgList) {
-                System.out.println(Color.PURPLE+"OUTPUT CEP EVENT: "+Color.RESET +  map.get("event").get("count"));
-            }*/
-            System.out.println("");
+            if (streamName == "RTR3OutStream"){
+                Map<String,Map<String,Object>> msgList = gson.fromJson((String)msg, typeOf);
+                Long count = (long)((double)msgList.get("event").get("count"));
+                if ((Boolean)msgList.get("event").get("isNeg")){
+                    Launcher.negCount = count;
+                }
+                else{
+                    Launcher.posCount = count;
+                }
+            }
+            else{
+                System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msg + " " + streamName);
+                System.out.println("");
+            }
         } catch(Exception ex) {
             ex.printStackTrace();
         }

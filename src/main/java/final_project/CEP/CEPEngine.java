@@ -42,24 +42,32 @@ public class CEPEngine {
         siddhiManager.setExtension("sinkMapper:json",JsonClassSink);
     }
 
-    public void createCEP(String inputStreamName, String outputStreamName, String inputStreamAttributesString, String outputStreamAttributesString,String queryString) {
+    public void createCEP(String inputStreamName, String[] outputStreamName, String inputStreamAttributesString, String[] outputStreamAttributesString,String queryString) {
         try {
             String inputTopic = UUID.randomUUID().toString();
-            String outputTopic = UUID.randomUUID().toString();
 
             topicMap.put(inputStreamName,inputTopic);
-            topicMap.put(outputStreamName,outputTopic);
+            for(String name : outputStreamName) {
+                String outputTopic = UUID.randomUUID().toString();
+                topicMap.put(name,outputTopic);
+            }
 
             String sourceString = getSourceString(inputStreamAttributesString, inputTopic, inputStreamName);
-            String sinkString = getSinkString(outputTopic,outputStreamName,outputStreamAttributesString);
+            String sinkString = "";
+            for(int i=0; i<outputStreamName.length; i++) {
+                String name = outputStreamName[i];
+                String attr = outputStreamAttributesString[i];
+                sinkString += getSinkString(topicMap.get(name),name,attr) + " ";
+            }
             //Generating runtime
 
             siddhiAppRuntime = siddhiManager.createSiddhiAppRuntime(sourceString + " " + sinkString + " " + queryString);
 
-            InMemoryBroker.Subscriber subscriberTest = new OutputSubscriber(outputTopic,outputStreamName);
-
-            //subscribe to "inMemory" broker per topic
-            InMemoryBroker.subscribe(subscriberTest);
+            for(String name : outputStreamName) {
+                InMemoryBroker.Subscriber subscriberTest = new OutputSubscriber(topicMap.get(name),name);
+                //subscribe to "inMemory" broker per topic
+                InMemoryBroker.subscribe(subscriberTest);
+            }
 
             //Starting event processing
             siddhiAppRuntime.start();

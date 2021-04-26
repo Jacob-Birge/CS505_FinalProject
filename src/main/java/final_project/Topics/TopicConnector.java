@@ -58,7 +58,7 @@ public class TopicConnector {
                     System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET +  map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
-                // TODO Fix the below
+                // TODO: Fix the below
                 Launcher.edbEngine.executeUpdate("UPDATE HOSPITALS SET used_beds = used_beds + "+incomingList.size()+" WHERE id=11640536");
                 /*
                 String tempQuery = "SELECT id FROM HOSPITALS";

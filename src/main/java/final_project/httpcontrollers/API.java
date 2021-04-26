@@ -166,8 +166,8 @@ public class API {
         try {
             logToConsole("testcount");
 
-            Integer pos_test_count = 0;
-            Integer neg_test_count = 0;
+            Long pos_test_count = Launcher.posCount;
+            Long neg_test_count = Launcher.negCount;
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();

@@ -30,7 +30,9 @@ public class Launcher {
     public static TopicConnector topicConnector;
 
     public static CEPEngine cepEngine = null;
-    public static CEPEngine cepRTR3 = null;
+    public static Long posCount = 0l;
+    public static Long negCount = 0l;
+
     public static EDBEngine edbEngine = null;
 
     public static void main(String[] args) throws IOException {
@@ -67,8 +69,8 @@ public class Launcher {
         inputStreamName = "PatientInStream";
         String inputStreamAttributesString = "first_name string, last_name string, mrn string, zip_code string, patient_status_code string";
 
-        String outputStreamName = "PatientOutStream";
-        String outputStreamAttributesString = "s1ZipCode string, count long";
+        String[] outputStreamNames = {"RTR1OutStream", "RTR2OutStream", "RTR3OutStream"};
+        String[] outputStreamAttributesStrings = {"count long", "count long", "count long, isNeg bool"};
 
         String queryString = " " +
                 "from PatientInStream[patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6']#window.timeBatch(15 sec)" +
@@ -76,9 +78,17 @@ public class Launcher {
                 " group by zip_code" +
                 " insert into PatientOutStream;";
 
+        queryString = " " +
+                " from PatientInStream[patient_status_code == '1' or patient_status_code == '4']" +
+                " select count(mrn) as count, true as isNeg" +
+                " insert into RTR3OutStream;" +
+                " from PatientInStream[patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6']" +
+                " select count(mrn) as count, false as isNeg" +
+                " insert into RTR3OutStream;";
+
         //END MODIFY
 
-        cepEngine.createCEP(inputStreamName, outputStreamName, inputStreamAttributesString, outputStreamAttributesString, queryString);
+        cepEngine.createCEP(inputStreamName, outputStreamNames, inputStreamAttributesString, outputStreamAttributesStrings, queryString);
 
         System.out.println(Color.GREEN+"CEP Started..."+Color.RESET);
         System.out.println();
