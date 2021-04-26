@@ -58,6 +58,7 @@ public class TopicConnector {
                     System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET +  map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
+                // TODO Fix the below
                 Launcher.edbEngine.executeUpdate("UPDATE HOSPITALS SET used_beds = used_beds + "+incomingList.size()+" WHERE id=11640536");
                 /*
                 String tempQuery = "SELECT id FROM HOSPITALS";
@@ -71,13 +72,15 @@ public class TopicConnector {
                     ex.printStackTrace(); RETURN ORIGINAL LIST WITH HOSPITAL ID FIELD ATTACHED (incoming list)
                 }
                 */
+                incomingList = Launcher.edbEngine.assignToHospital(incomingList);
+                //System.out.println(incomingList);
                 String queryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code, hospital_id) VALUES ";
                 String insertTuples = "";
                 Integer numTuples = 0;
                 for(Map<String,String> map : incomingList) {
                     if (insertTuples != "")
                         insertTuples += ",";
-                    insertTuples += "('"+map.get("first_name")+"','"+map.get("last_name")+"','"+map.get("mrn")+"','"+map.get("zip_code")+"','"+map.get("patient_status_code")+"', 11640536)";
+                    insertTuples += "('"+map.get("first_name")+"','"+map.get("last_name")+"','"+map.get("mrn")+"','"+map.get("zip_code")+"','"+map.get("patient_status_code")+"',"+map.get("closest_hospital")+")";
                     numTuples++;
                     if (numTuples >= maxNumTuples){
                         String insertQuery = queryBegin + insertTuples;

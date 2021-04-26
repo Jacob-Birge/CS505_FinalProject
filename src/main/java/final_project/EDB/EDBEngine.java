@@ -316,14 +316,47 @@ public class EDBEngine {
         return responseMap;
     }
 
-    public ResultSet executeSelect(String queryString){
-        Map<String, Integer> accessMap = new HashMap<>();
+    public List<Map<String,String>> assignToHospital(List<Map<String,String>> incoming){
         try {
-            Type type = new TypeToken<Map<String, String>>(){}.getType();
+            for(Map<String,String> map : incoming) { 
+                String pzip = map.get("zip_code");
+                String queryString = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE 'h.zip' = '" + pzip + "'";
+                try(Connection conn = ds.getConnection()) {
+                    try (Statement stmt = conn.createStatement()) {
+                        try(ResultSet rs = stmt.executeQuery(queryString)) {
+                            if(rs.next()) {
+                                // in the same zip code
+                                map.put("closest_hospital", rs.getString("hid"));
+                            }
+                            else {
+                                // get closest hospital
+                                String hidForClosestHospital = findClosestHospital(pzip);
+                                map.put("closest_hospital", hidForClosestHospital);
+                            }
+                        }
+                    }
+                }
+            }
+            return incoming;
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
+    public String findClosestHospital(String zip) {
+        Integer zipc = Integer.parseInt(zip);
+        try { 
+            String queryString = "SELECT h.id AS hid FROM APP.KYZIPDISTANCE as z, APP.HOSPITALS as h WHERE z.zip_from = " + zipc + " AND z.zip_to = h.zip ORDER BY z.distance ASC";
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
                     try(ResultSet rs = stmt.executeQuery(queryString)) {
-                       return rs;
+                        if(rs.next()) {
+                            return rs.getString("hid");
+                        }
+                        else {
+                            System.out.println("\n"+zipc+"\n");
+                        }
                     }
                 }
             }
