@@ -280,23 +280,24 @@ public class EDBEngine {
             String queryString = null;
             String availableBedQuery = null;
 
-            queryString =   "SELECT (SELECT h.id AS hid, h.beds AS totbeds, p.mrn AS pmrn FROM APP.HOSPITALS AS h " +
-                            "JOIN APP.PATIENTINFO AS p ON h.zip = p.zipcode WHERE p.patient_status_code != 0) ";
+            queryString =   "SELECT h.id AS hid, h.beds AS totbeds, p.mrn AS pmrn FROM APP.HOSPITALS AS h " +
+                            "JOIN APP.PATIENTINFO AS p ON h.zip = p.zipcode WHERE p.patient_status_code != 0 AND h.used_beds < totbeds";
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
                     try(ResultSet rs = stmt.executeQuery(queryString)) {
                         while (rs.next()) {
-                            String currentHospital = rs.getString("id");
-                            availableBedQuery = "SELECT COUNT(*) FROM APP.PATIENTINFO WHERE hospital_id = " + currentHospital;
-                            try(Connection con = ds.getConnection()) {
-                                try (Statement stamt = con.createStatement()) {
-                                    try(ResultSet rst = stamt.executeQuery(availableBedQuery)) {
-                                        while(rst.next()){
-                                            System.out.print(rst.getInt("COUNT(*)"));
-                                        }
-                                    }
-                                }
-                            }
+                            System.out.println(rs.getString("pmrn"));
+                            // String currentHospital = rs.getString("id");
+                            // availableBedQuery = "SELECT COUNT(*) FROM APP.PATIENTINFO WHERE hospital_id = " + currentHospital;
+                            // try(Connection con = ds.getConnection()) {
+                            //     try (Statement stamt = con.createStatement()) {
+                            //         try(ResultSet rst = stamt.executeQuery(availableBedQuery)) {
+                            //             while(rst.next()){
+                            //                 System.out.print(rst.getInt("COUNT(*)"));
+                            //             }
+                            //         }
+                            //     }
+                            // }
 
                             //if (rs.getString("beds"))
                         }
@@ -350,32 +351,20 @@ public class EDBEngine {
         return responseMap;
     }
 
-    public Map<String, Integer> getAccessLogCount(){
+    public ResultSet executeSelect(String queryString){
         Map<String, Integer> accessMap = new HashMap<>();
         try {
             Type type = new TypeToken<Map<String, String>>(){}.getType();
-
-            String queryString = null;
-
-            //fill in the query
-            queryString = "SELECT remote_ip, COUNT(remote_ip) as ip_count FROM accesslog GROUP BY remote_ip";
-
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
-
                     try(ResultSet rs = stmt.executeQuery(queryString)) {
-
-                        while (rs.next()) {
-                            accessMap.put(rs.getString("remote_ip"), rs.getInt("ip_count"));
-                        }
+                       return rs;
                     }
                 }
             }
-
         } catch(Exception ex) {
             ex.printStackTrace();
         }
-
-        return accessMap;
+        return null;
     }
 }

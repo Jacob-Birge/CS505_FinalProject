@@ -13,6 +13,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import final_project.Launcher;
 
 @Path("/api")
 public class API {
@@ -232,7 +233,7 @@ public class API {
         try {
             logToConsole("getpatient");
 
-            assignPatient(mrn);
+            Launcher.edbEngine.assignPatient(mrn);
             // String mrn = "";
             Integer locationCode = -1;
 
@@ -270,7 +271,7 @@ public class API {
             logToConsole("gethospital");
 
             Map<String, String> hospitalInfo = new HashMap<>();
-            hospitalInfo = getHospitalInfo(id);
+            hospitalInfo = Launcher.edbEngine.getHospitalInfo(id);
 
             //generate a response
             responseString = gson.toJson(hospitalInfo);
