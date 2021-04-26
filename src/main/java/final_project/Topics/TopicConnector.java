@@ -68,7 +68,7 @@ public class TopicConnector {
                     }
                 }
                 catch (Exception ex){
-                    ex.printStackTrace();
+                    ex.printStackTrace(); RETURN ORIGINAL LIST WITH HOSPITAL ID FIELD ATTACHED (incoming list)
                 }
                 */
                 String queryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code, hospital_id) VALUES ";

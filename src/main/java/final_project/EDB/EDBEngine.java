@@ -296,41 +296,23 @@ public class EDBEngine {
         Map<String,String> responseMap = null;
         try {
             responseMap = new HashMap<>();
-            //Type type = new TypeToken<Map<String, String>>(){}.getType();
-
             String queryString = null;
-            String bedString = null;
-
             //fill in the query
-            queryString = "SELECT * FROM APP.HOSPITALS WHERE id = " + ID;
-            // bedString = "SELECT * FROM APP.PATIENTINFO WHERE "
-
+            queryString = "SELECT beds, beds - used_beds AS availbeds, zip FROM APP.HOSPITALS WHERE id = " + ID;
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
                     try(ResultSet rs = stmt.executeQuery(queryString)) {
-
                         while (rs.next()) {
-                            Map<String, String> accessMap = new HashMap<>();
-                            Integer totBeds = 0;
-                            Integer availBeds = 0;
-                            Integer zipcode = 0;
                             responseMap.put("total_beds", rs.getString("beds"));
-                            // responseMap.put("avalable_beds", rs.getString("access_ts"));
-                            // responseMap.put("zipcode", rs.getString());
+                            responseMap.put("avalable_beds", rs.getString("availbeds"));
+                            responseMap.put("zipcode", rs.getString("zip"));
                         }
-
                     }
                 }
             }
-            
-            // responseMap.put("total_beds", totBeds.toString());
-            // responseMap.put("avalable_beds", availBeds.toString());
-            // responseMap.put("zipcode", zipcode.toString());
-
         } catch(Exception ex) {
             ex.printStackTrace();
         }
-
         return responseMap;
     }
 
