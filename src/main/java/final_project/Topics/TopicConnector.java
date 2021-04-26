@@ -11,6 +11,7 @@ import com.rabbitmq.client.DeliverCallback;
 import final_project.Launcher;
 
 import java.lang.reflect.Type;
+import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
@@ -57,13 +58,25 @@ public class TopicConnector {
                     System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET +  map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
-                String queryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code) VALUES ";
+                /*
+                String tempQuery = "SELECT id FROM HOSPITALS";
+                ResultSet rs = Launcher.edbEngine.executeSelect(tempQuery);
+                try {
+                    while (rs.next()) {
+                        System.out.println(rs.getInt("id") + " ");
+                    }
+                }
+                catch (Exception ex){
+                    ex.printStackTrace();
+                }
+                */
+                String queryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code, hospital_id) VALUES ";
                 String insertTuples = "";
                 Integer numTuples = 0;
                 for(Map<String,String> map : incomingList) {
                     if (insertTuples != "")
                         insertTuples += ",";
-                    insertTuples += "('"+map.get("first_name")+"','"+map.get("last_name")+"','"+map.get("mrn")+"','"+map.get("zip_code")+"','"+map.get("patient_status_code")+"')";
+                    insertTuples += "('"+map.get("first_name")+"','"+map.get("last_name")+"','"+map.get("mrn")+"','"+map.get("zip_code")+"','"+map.get("patient_status_code")+"', 11640536)";
                     numTuples++;
                     if (numTuples >= maxNumTuples){
                         String insertQuery = queryBegin + insertTuples;
