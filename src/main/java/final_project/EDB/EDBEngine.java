@@ -138,23 +138,9 @@ public class EDBEngine {
         createRNode = "CREATE TABLE APP.HOSPITALS" +
                 "(" +
                 "   id BIGINT," +
-                "   name VARCHAR(255)," +
-                "   address VARCHAR(255)," +
-                "   city VARCHAR(255)," +
-                "   state VARCHAR(255)," +
                 "   zip INTEGER," +
-                "   type VARCHAR(255)," +
                 "   beds INTEGER," +
-                "   county VARCHAR(255)," +
-                "   countyfips INTEGER," +
-                "   country VARCHAR(255)," +
-                "   latitude DOUBLE," +
-                "   longitude DOUBLE," +
-                "   naics_code INTEGER," +
-                "   website VARCHAR(255)," +
-                "   owner VARCHAR(255)," +
                 "   trauma VARCHAR(255)," +
-                "   helipad VARCHAR(255)," +
                 "   used_beds INTEGER" +
                 ")";
 
