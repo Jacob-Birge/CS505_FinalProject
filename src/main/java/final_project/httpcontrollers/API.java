@@ -233,7 +233,7 @@ public class API {
         try {
             logToConsole("getpatient");
 
-            String hospitalID = Launcher.edbEngine.assignPatient(mrn);
+            String hospitalID = Launcher.edbEngine.getPatientLocation(mrn);
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();

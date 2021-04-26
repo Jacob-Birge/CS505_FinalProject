@@ -273,12 +273,9 @@ public class EDBEngine {
         return exist;
     }
 
-    public String assignPatient(String mrn) {
-        Map<String,String> responseMap = null;
-        
+    public String getPatientLocation(String mrn) {
         try {
             String queryString = null;
-
             queryString = "SELECT hospital_id AS hid FROM APP.PATIENTINFO WHERE mrn = '" + mrn + "'";
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
