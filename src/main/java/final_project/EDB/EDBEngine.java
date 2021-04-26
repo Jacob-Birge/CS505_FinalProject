@@ -273,33 +273,18 @@ public class EDBEngine {
         return exist;
     }
 
-    public void assignPatient(String mrn) {
+    public String assignPatient(String mrn) {
         Map<String,String> responseMap = null;
         
         try {
             String queryString = null;
-            String availableBedQuery = null;
 
-            queryString =   "SELECT h.id AS hid, h.beds AS totbeds, p.mrn AS pmrn FROM APP.HOSPITALS AS h " +
-                            "JOIN APP.PATIENTINFO AS p ON h.zip = p.zipcode WHERE p.patient_status_code != 0 AND h.used_beds < totbeds";
+            queryString = "SELECT hospital_id AS hid FROM APP.PATIENTINFO WHERE mrn = '" + mrn + "'";
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
                     try(ResultSet rs = stmt.executeQuery(queryString)) {
                         while (rs.next()) {
-                            System.out.println(rs.getString("pmrn"));
-                            // String currentHospital = rs.getString("id");
-                            // availableBedQuery = "SELECT COUNT(*) FROM APP.PATIENTINFO WHERE hospital_id = " + currentHospital;
-                            // try(Connection con = ds.getConnection()) {
-                            //     try (Statement stamt = con.createStatement()) {
-                            //         try(ResultSet rst = stamt.executeQuery(availableBedQuery)) {
-                            //             while(rst.next()){
-                            //                 System.out.print(rst.getInt("COUNT(*)"));
-                            //             }
-                            //         }
-                            //     }
-                            // }
-
-                            //if (rs.getString("beds"))
+                            return rs.getString("hid");
                         }
                     }
                 }
@@ -307,6 +292,7 @@ public class EDBEngine {
         } catch(Exception ex) {
             ex.printStackTrace();
         }
+        return null;
     }
 
     public Map<String,String> getHospitalInfo(String ID) {

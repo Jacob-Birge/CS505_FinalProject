@@ -233,14 +233,12 @@ public class API {
         try {
             logToConsole("getpatient");
 
-            Launcher.edbEngine.assignPatient(mrn);
-            // String mrn = "";
-            Integer locationCode = -1;
+            String hospitalID = Launcher.edbEngine.assignPatient(mrn);
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();
             responseMap.put("mrn", mrn);
-            responseMap.put("location_code", locationCode.toString());
+            responseMap.put("location_code", hospitalID);
             responseString = gson.toJson(responseMap);
 
         } catch (Exception ex) {
