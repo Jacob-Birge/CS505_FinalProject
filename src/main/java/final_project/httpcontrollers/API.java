@@ -234,6 +234,13 @@ public class API {
             logToConsole("getpatient");
 
             String hospitalID = Launcher.edbEngine.getPatientLocation(mrn);
+            if(hospitalID.equals("0")) {
+                hospitalID = "Home";
+            }
+
+            if(hospitalID.equals("-1")) {
+                hospitalID = "WARNING: CANNOT ACCOMODATE. ALL HOSPITALS FULL.";
+            }
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();

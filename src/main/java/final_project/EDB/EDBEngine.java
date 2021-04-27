@@ -273,6 +273,8 @@ public class EDBEngine {
         return exist;
     }
 
+
+    //gets the hospital id or "Home" from patient's mrn number
     public String getPatientLocation(String mrn) {
         try {
             String queryString = null;
@@ -292,6 +294,7 @@ public class EDBEngine {
         return null;
     }
 
+    // Gets hospital info
     public Map<String,String> getHospitalInfo(String ID) {
         Map<String,String> responseMap = null;
         try {
@@ -316,25 +319,47 @@ public class EDBEngine {
         return responseMap;
     }
 
+    // assigns a patient to a hospital if neccessary.
     public List<Map<String,String>> assignToHospital(List<Map<String,String>> incoming){
         try {
-            for(Map<String,String> map : incoming) { 
-                String pzip = map.get("zip_code");
-                String queryString = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE 'h.zip' = '" + pzip + "'";
-                try(Connection conn = ds.getConnection()) {
-                    try (Statement stmt = conn.createStatement()) {
-                        try(ResultSet rs = stmt.executeQuery(queryString)) {
-                            if(rs.next()) {
-                                // in the same zip code
-                                map.put("closest_hospital", rs.getString("hid"));
-                            }
-                            else {
-                                // get closest hospital
-                                String hidForClosestHospital = findClosestHospital(pzip);
-                                map.put("closest_hospital", hidForClosestHospital);
+            for(Map<String,String> map : incoming) {
+                // if patient needs a hospital
+                if (map.get("patient_status_code").equals("3") || map.get("patient_status_code").equals("5") || map.get("patient_status_code").equals("6")) {
+                    String pzip = map.get("zip_code");
+                    String queryString = "";
+                    if (map.get("patient_status_code").equals("6")) {
+                        queryString =   "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE 'h.zip' = '" + 
+                                        pzip + "' AND h.trauma != 'NOT AVAILABLE' AND h.beds > h.used_beds";
+                    }
+                    else {
+                        queryString =   "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE 'h.zip' = '" + 
+                                        pzip + "' AND h.beds > h.used_beds";
+                    }
+                    try(Connection conn = ds.getConnection()) {
+                        try (Statement stmt = conn.createStatement()) {
+                            try(ResultSet rs = stmt.executeQuery(queryString)) {
+                                if(rs.next()) {
+                                    // in the same zip code
+                                    map.put("closest_hospital", rs.getString("hid"));
+                                }
+                                else {
+                                    // get closest hospital
+                                    String hidForClosestHospital = "";
+                                    if (map.get("patient_status_code").equals("6")) {
+                                        hidForClosestHospital = findClosestHospital(pzip, true);
+                                    }
+                                    else {
+                                        hidForClosestHospital = findClosestHospital(pzip, false);
+                                    }
+                                    map.put("closest_hospital", hidForClosestHospital);
+                                }
                             }
                         }
                     }
+                }
+                else {
+                    //setting home to 0 bc hospital code is big int, converted to "Home" in API.java
+                    map.put("closest_hospital", "0"); 
                 }
             }
             return incoming;
@@ -344,10 +369,19 @@ public class EDBEngine {
         return null;
     }
 
-    public String findClosestHospital(String zip) {
+    // finds a patient's closest hospital
+    public String findClosestHospital(String zip, Boolean isStatus6) {
         Integer zipc = Integer.parseInt(zip);
-        try { 
-            String queryString = "SELECT h.id AS hid FROM APP.KYZIPDISTANCE as z, APP.HOSPITALS as h WHERE z.zip_from = " + zipc + " AND z.zip_to = h.zip ORDER BY z.distance ASC";
+        try {
+            String queryString = ""; 
+            if (isStatus6) {
+                queryString =   "SELECT h.id AS hid FROM APP.KYZIPDISTANCE as z, APP.HOSPITALS as h WHERE z.zip_from = " + 
+                                zipc + " AND z.zip_to = h.zip AND h.trauma != 'NOT AVAILABLE' AND h.beds > h.used_beds ORDER BY z.distance ASC";
+            }
+            else {
+                queryString =   "SELECT h.id AS hid FROM APP.KYZIPDISTANCE as z, APP.HOSPITALS as h WHERE z.zip_from = " + 
+                                zipc + " AND z.zip_to = h.zip AND h.beds > h.used_beds ORDER BY z.distance ASC";
+            }
             try(Connection conn = ds.getConnection()) {
                 try (Statement stmt = conn.createStatement()) {
                     try(ResultSet rs = stmt.executeQuery(queryString)) {
@@ -355,7 +389,29 @@ public class EDBEngine {
                             return rs.getString("hid");
                         }
                         else {
-                            System.out.println("\n"+zipc+"\n");
+                            System.out.println("Zip Not Found: "+zipc+"\n");
+                            String alternateHosp = "";
+                            if (isStatus6) {
+                                alternateHosp = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE h.trauma != 'NOT AVAILABLE' " +
+                                                "AND h.beds > h.used_beds ORDER BY used_beds ASC";
+                            }
+                            else {
+                                alternateHosp = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE h.beds > h.used_beds " +
+                                                "ORDER BY used_beds ASC";
+                            }
+                            
+                            try(Connection con = ds.getConnection()) {
+                                try (Statement stamt = con.createStatement()) {
+                                    try(ResultSet rst = stamt.executeQuery(alternateHosp)) {
+                                        if(rst.next()) {
+                                            return rst.getString("hid");
+                                        }
+                                        else {
+                                            return "-1";
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
