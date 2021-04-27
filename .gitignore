@@ -12,7 +12,6 @@ buildNumber.properties
 
 gitPushAll.sh
 
-data/*
 .classpath
 .factorypath
 .project
