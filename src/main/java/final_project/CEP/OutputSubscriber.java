@@ -16,7 +16,6 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
     private String topic;
     private String streamName;
     private Gson gson;
-    final Type typeOf = new TypeToken<Map<String,Map<String,Object>>>(){}.getType();
 
     public OutputSubscriber(String topic, String streamName) {
         this.topic = topic;
@@ -27,7 +26,25 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
     @Override
     public void onMessage(Object msg) {
         try {
-            if (streamName == "RTR3OutStream"){
+            if (streamName == "RTR1OutStream"){
+                /*String printStr = "";
+                Type typeOf = new TypeToken<List<Map<String,Map<String,Object>>>>(){}.getType();
+                List<Map<String,Map<String,Object>>> msgList = gson.fromJson((String)msg, typeOf);
+                for (Map<String,Map<String,Object>> map : msgList){
+                    printStr += (String)map.get("event").get("s1ZipCode");
+                    printStr += ":" + ((Double)map.get("event").get("count")).toString() + ",";
+                }*/
+                String msgStr = (String)msg;
+                msgStr.replaceAll("\"s2count\":2", Color.GREEN+"\"s2count\":2"+Color.RESET);
+                System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msgStr + " " + streamName);
+                System.out.println("");
+            }
+            else if (streamName == "RTR2OutStream"){
+                System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msg + " " + streamName);
+                System.out.println("");
+            }
+            else if (streamName == "RTR3OutStream"){
+                Type typeOf = new TypeToken<Map<String,Map<String,Object>>>(){}.getType();
                 Map<String,Map<String,Object>> msgList = gson.fromJson((String)msg, typeOf);
                 Long count = (long)((double)msgList.get("event").get("count"));
                 if ((Boolean)msgList.get("event").get("isNeg")){
@@ -38,7 +55,7 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                 }
             }
             else{
-                System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msg + " " + streamName);
+                System.out.println(Color.RED+"Unknown Stream Encountered"+Color.RESET);
                 System.out.println("");
             }
         } catch(Exception ex) {
