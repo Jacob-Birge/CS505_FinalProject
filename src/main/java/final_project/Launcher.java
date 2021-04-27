@@ -70,21 +70,50 @@ public class Launcher {
         String inputStreamAttributesString = "first_name string, last_name string, mrn string, zip_code string, patient_status_code string";
 
         String[] outputStreamNames = {"RTR1OutStream", "RTR2OutStream", "RTR3OutStream"};
-        String[] outputStreamAttributesStrings = {"count long", "count long", "count long, isNeg bool"};
+        String[] outputStreamAttributesStrings = {"e1count long, e2count long", "count long", "count long, isNeg bool"};
 
-        String queryString = " " +
-                "from PatientInStream[patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6']#window.timeBatch(15 sec)" +
-                " select zip_code as s1ZipCode, count() as count" +
+        String rtr1Query = " " +
+                " from PatientInStream#window.time(15 sec)" +
+                " select count() as count" +
+                " insert into tempStream;" +
+
+                " from every( e1=tempStream )" +
+                " -> e2=tempStream[(2*e1.count) <= count]" +
+                " within 15 sec" +
+                " select e1.count as e1count, e2.count as e2count" +
+                " insert into RTR1OutStream;";
+
+        /*String rtr1Query = " " +
+                " from e1=PatientInStream#window.time(1 sec), e2=PatientInStream#window.time(30 sec)" +
+                " select e1.zip_code as zip_code, count(e1.mrn) as count1" +
+                " group by e1.zip_code" +
+                " insert into RTR1OutStream;";/*
+
+                " from " +
+                " select zip_code, count() as count" +
                 " group by zip_code" +
-                " insert into PatientOutStream;";
+                " insert into RTR1OutStream;";/*
 
-        queryString = " " +
+                " from every e1=tempStream1, e2=tempStream2" +
+                " select e2.zip_code as s2zip_code, e1.count as s1count, s2.count as s2count" +
+                " insert into RTR1OutStream;";
+
+                /*" from PatientInStream#window.timeBatch(1 sec) as s1 right outer join PatientInStream#window.timeBatch(30 sec) as s2 on s1.mrn==s2.mrn" +
+                " select s2.zip_code as s2zip_code, count(s1.mrn) as s1count, count(s2.mrn) as s2count" +
+                " group by s2.zip_code" +
+                " insert into RTR1OutStream;";*/
+
+        String rtr2Query = "";
+
+        String rtr3Query = " " +
                 " from PatientInStream[patient_status_code == '1' or patient_status_code == '4']" +
                 " select count(mrn) as count, true as isNeg" +
                 " insert into RTR3OutStream;" +
                 " from PatientInStream[patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6']" +
                 " select count(mrn) as count, false as isNeg" +
                 " insert into RTR3OutStream;";
+
+        String queryString = rtr1Query + " " + rtr2Query + " " + rtr3Query;
 
         //END MODIFY
 
@@ -130,8 +159,7 @@ public class Launcher {
     private static void startServer() throws IOException {
 
         final ResourceConfig rc = new ResourceConfig()
-        .packages("final_project.httpcontrollers")
-        .register(AuthenticationFilter.class);
+        .packages("final_project.httpcontrollers");
 
         System.out.println(Color.CYAN + "Starting Web Server..." + Color.RESET);
         URI BASE_URI = UriBuilder.fromUri("http://0.0.0.0/").port(WEB_PORT).build();
