@@ -38,7 +38,7 @@ public class API {
     @GET
     @Path("/getteam")
     @Produces(MediaType.APPLICATION_JSON)
-    public Response MF1(String authKey) {
+    public Response MF1() {
         String responseString = "{}";
         try {
             logToConsole("getteam");
@@ -67,7 +67,7 @@ public class API {
     @Path("/reset")
     @Produces(MediaType.APPLICATION_JSON)
     //TODO:
-    public Response MF2(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response MF2() {
         String responseString = "{}";
         try {
             logToConsole("reset");
@@ -97,7 +97,7 @@ public class API {
      * triggered.  However, if for time t15-t29 the new patient rate was 15, no alert would be generated.
      * @return ziplist = list of zipcodes in alert status
     */
-    public Response RTR1(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response RTR1() {
         String responseString = "{}";
         try {
             logToConsole("zipalertlist");
@@ -128,7 +128,7 @@ public class API {
      * @param authKey
      * @return state_status = 0 = state is not in alert, 1 = state is in alert
      */
-    public Response RTR2(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response RTR2() {
         String responseString = "{}";
         try {
             logToConsole("alertlist");
@@ -161,7 +161,7 @@ public class API {
      * @return positive_test = count of positive test
      * @return negative_test = count of negative_test
      */
-    public Response RTR3(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response RTR3() {
         String responseString = "{}";
         try {
             logToConsole("testcount");
@@ -197,7 +197,7 @@ public class API {
      * @param authKey
      * @return
      */
-    public Response OF1(@HeaderParam("X-Auth-API-Key") String authKey) {
+    public Response OF1() {
         String responseString = "{}";
         try {
             logToConsole("of1");
@@ -228,7 +228,7 @@ public class API {
      * @return mrn = medical record number
      * @return location_code = hospital ID, ID = 0 for home assignment, ID=-1 for no assignment
      */
-    public Response OF2(@HeaderParam("X-Auth-API-Key") String authKey, @PathParam("mrn") String mrn) {
+    public Response OF2(@PathParam("mrn") String mrn) {
         String responseString = "{}";
         try {
             logToConsole("getpatient");
@@ -270,7 +270,7 @@ public class API {
      * @return avalable_beds = available number of beds
      * @return zipcode = zipcode of hospital
      */
-    public Response OF3(@HeaderParam("X-Auth-API-Key") String authKey, @PathParam("id") String id) {
+    public Response OF3(@PathParam("id") String id) {
         String responseString = "{}";
         try {
             logToConsole("gethospital");
