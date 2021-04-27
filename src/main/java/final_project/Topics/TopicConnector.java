@@ -58,8 +58,6 @@ public class TopicConnector {
                     System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET +  map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
-                // TODO: Fix the below
-                Launcher.edbEngine.executeUpdate("UPDATE HOSPITALS SET used_beds = used_beds + "+incomingList.size()+" WHERE id=11640536");
                 /*
                 String tempQuery = "SELECT id FROM HOSPITALS";
                 ResultSet rs = Launcher.edbEngine.executeSelect(tempQuery);
@@ -88,6 +86,14 @@ public class TopicConnector {
                         insertTuples = "";
                         numTuples = 0;
                     }
+    //TODO: threading fucks this up
+                    // Update Hospital Bed Count 
+                    String closestHosp = map.get("closest_hospital");
+                    if (!closestHosp.equals("0") || !closestHosp.equals("-1")){
+                        Integer hospitalAsInt = Integer.parseInt(closestHosp);
+                        Launcher.edbEngine.executeUpdate("UPDATE HOSPITALS SET used_beds = used_beds + 1 WHERE id=" + hospitalAsInt);
+                    }
+                    
                 }
                 if (numTuples > 0){
                     String insertQuery = queryBegin + insertTuples;
@@ -96,6 +102,8 @@ public class TopicConnector {
                     numTuples = 0;
                 }
                 System.out.println("");
+
+                
             };
 
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {
