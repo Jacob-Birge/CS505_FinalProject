@@ -385,29 +385,31 @@ public class EDBEngine {
                             return rs.getString("hid");
                         }
                         else {
-                            System.out.println("Zip Not Found: "+zipc+"\n");
-                            String alternateHosp = "";
-                            if (isStatus6) {
-                                alternateHosp = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE h.trauma != 'NOT AVAILABLE' " +
-                                                "AND h.beds > h.used_beds ORDER BY used_beds ASC";
-                            }
-                            else {
-                                alternateHosp = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE h.beds > h.used_beds " +
-                                                "ORDER BY used_beds ASC";
-                            }
+                            return "-1"; // zip not in zipdistance CSV
+
+                            // System.out.println("Zip Not Found: "+zipc+"\n");
+                            // String alternateHosp = "";
+                            // if (isStatus6) {
+                            //     alternateHosp = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE h.trauma != 'NOT AVAILABLE' " +
+                            //                     "AND h.beds > h.used_beds ORDER BY used_beds ASC";
+                            // }
+                            // else {
+                            //     alternateHosp = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE h.beds > h.used_beds " +
+                            //                     "ORDER BY used_beds ASC";
+                            // }
                             
-                            try(Connection con = ds.getConnection()) {
-                                try (Statement stamt = con.createStatement()) {
-                                    try(ResultSet rst = stamt.executeQuery(alternateHosp)) {
-                                        if(rst.next()) {
-                                            return rst.getString("hid");
-                                        }
-                                        else {
-                                            return "-1";
-                                        }
-                                    }
-                                }
-                            }
+                            // try(Connection con = ds.getConnection()) {
+                            //     try (Statement stamt = con.createStatement()) {
+                            //         try(ResultSet rst = stamt.executeQuery(alternateHosp)) {
+                            //             if(rst.next()) {
+                            //                 return rst.getString("hid");
+                            //             }
+                            //             else {
+                            //                 return "-1";
+                            //             }
+                            //         }
+                            //     }
+                            // }
                         }
                     }
                 }
@@ -421,8 +423,23 @@ public class EDBEngine {
     // Empties APP.PATIENTINFO
     public boolean purgePatientInfo(){
         try {
+            String queryString = "DELETE FROM APP.PATIENTINFO WHERE 1=1";
+            try(Connection conn = ds.getConnection()) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(queryString);
+                }
+            }
+
+            String queryString1 = "UPDATE APP.HOSPITALS SET used_beds = 0 WHERE 1=1";
+            try(Connection conn = ds.getConnection()) {
+                try (Statement stmt = conn.createStatement()) {
+                    stmt.executeUpdate(queryString1);
+                }
+            }
             return true;
-        } catch (Exception ex) {}
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         return false;
     }
 }
