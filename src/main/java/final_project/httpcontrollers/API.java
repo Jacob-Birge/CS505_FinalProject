@@ -44,7 +44,6 @@ public class API {
             Map<String,String> responseMap = new HashMap<>();
             responseMap.put("team_name", "CEB: complex event brocessors");
             responseMap.put("team_member_sids", "[\"12257232\", \"12142047\"]");
-            //TODO: logic for if app is on or off
             responseMap.put("app_status_code",Launcher.app_status_code.toString());
 
             responseString = gson.toJson(responseMap);
@@ -106,6 +105,20 @@ public class API {
             logToConsole("zipalertlist");
 
             ArrayList<String> ziplist = new ArrayList<>();
+            ArrayList<String> zipsToRemove = new ArrayList<>();
+            long curTime = System.currentTimeMillis();
+            for (String zipcode : Launcher.alertZipcodes.keySet()){
+                if (curTime - Launcher.alertZipcodes.get(zipcode) > 15000){
+                    zipsToRemove.add(zipcode);
+                }
+                else{
+                    ziplist.add(zipcode);
+                }
+            }
+
+            for (String zipcode : zipsToRemove){
+                Launcher.alertZipcodes.remove(zipcode);
+            }
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();

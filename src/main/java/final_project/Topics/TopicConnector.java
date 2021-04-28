@@ -36,7 +36,7 @@ public class TopicConnector {
             String virtualhost = "3";
 
             ConnectionFactory factory = new ConnectionFactory();
-            factory.setRequestedHeartbeat(10);
+            factory.setRequestedHeartbeat(5);
             factory.setHost(hostname);
             factory.setUsername(username);
             factory.setPassword(password);
@@ -59,18 +59,6 @@ public class TopicConnector {
                     System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET +  map);
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
-                /*
-                String tempQuery = "SELECT id FROM HOSPITALS";
-                ResultSet rs = Launcher.edbEngine.executeSelect(tempQuery);
-                try {
-                    while (rs.next()) {
-                        System.out.println(rs.getInt("id") + " ");
-                    }
-                }
-                catch (Exception ex){
-                    ex.printStackTrace(); RETURN ORIGINAL LIST WITH HOSPITAL ID FIELD ATTACHED (incoming list)
-                }
-                */
                 incomingList = Launcher.edbEngine.assignToHospital(incomingList);
                 //System.out.println(incomingList);
                 String queryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code, hospital_id) VALUES ";

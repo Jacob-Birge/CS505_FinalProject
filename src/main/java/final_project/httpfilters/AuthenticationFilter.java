@@ -1,8 +1,5 @@
 package final_project.httpfilters;
 
-
-import final_project.Launcher;
-
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.Response;
@@ -19,7 +16,7 @@ public class AuthenticationFilter implements ContainerRequestFilter {
             // Then check is the service key exists and is valid.
             String serviceKey = requestContext.getHeaderString("X-Auth-API-Key");
             if (serviceKey != null) {
-                if(Launcher.API_SERVICE_KEY != "0") {
+                if("" != "0") {
                     return;
                 } else {
                     System.out.println("CHANGE YOUR Launcher.API_SERVICE_KEY!");
