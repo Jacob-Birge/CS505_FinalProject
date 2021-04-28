@@ -30,7 +30,7 @@ public class TopicConnector {
 
     public void connect() {
         try {
-            String hostname = "128.163.202.50";
+            String hostname = "vcbumg2.cs.uky.edu";//"128.163.202.50";
             String username = "student";
             String password = "student01";
             String virtualhost = "3";
