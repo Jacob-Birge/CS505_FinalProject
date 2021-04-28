@@ -12,18 +12,16 @@ import javax.ws.rs.core.UriBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Launcher {
-
-    public static final String API_SERVICE_KEY = "12142047"; //Change this to your student id
     public static final int WEB_PORT = 9000;
     public static String inputStreamName = null;
 
     public static Integer app_status_code = 0;
     public static Boolean ableToReset = false;
-    public static ConcurrentSkipListSet<String> alertZipcodes = new ConcurrentSkipListSet<String>();
+    public static ConcurrentHashMap<String, Long> alertZipcodes = new ConcurrentHashMap<String, Long>();
     public static Long posCount = 0l;
     public static Long negCount = 0l;
 
@@ -69,24 +67,21 @@ public class Launcher {
         inputStreamName = "PatientInStream";
         String inputStreamAttributesString = "first_name string, last_name string, mrn string, zip_code string, patient_status_code string";
 
-        String[] outputStreamNames = {"RTR1OutStream", "RTR2OutStream", "RTR3OutStream"};
-        String[] outputStreamAttributesStrings = {"e1count long, e2count long", "count long", "count long, isNeg bool"};
+        String[] outputStreamNames = {"RTR1OutStream", "RTR3OutStream"};
+        String[] outputStreamAttributesStrings =    {"zip_code string, e1count long, e2count long", 
+                                                    "count long, isNeg bool"};
 
         String rtr1Query = " " +
                 " from PatientInStream[patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6']#window.time(15 sec)" +
-                " select count() as count" +
-                " insert into tempStream;" +
+                " select zip_code, count() as count" +
+                " group by zip_code" +
+                " insert into tempStream1;" +
 
-                " from every( e1=tempStream )" +
-                " -> e2=tempStream[(2*e1.count) <= count]" +
+                " from every( e1=tempStream1 )" +
+                " -> e2=tempStream1[e1.zip_code==zip_code and (2*e1.count) <= count]" +
                 " within 15 sec" +
-                " select e1.count as e1count, e2.count as e2count" +
+                " select e1.zip_code as zip_code, e1.count as e1count, e2.count as e2count" +
                 " insert into RTR1OutStream;";
-
-        String rtr2Query = " ";/* +
-                " from PatientInStream" +
-                " select count() as count" +
-                " insert into RTR2OutStream;";*/
 
         String rtr3Query = " " +
                 " from PatientInStream[patient_status_code == '1' or patient_status_code == '4']" +
@@ -96,7 +91,7 @@ public class Launcher {
                 " select count(mrn) as count, false as isNeg" +
                 " insert into RTR3OutStream;";
 
-        String queryString = rtr1Query + " " + rtr2Query + " " + rtr3Query;
+        String queryString = rtr1Query + " " + rtr3Query;
 
         //CEP initialization
         cepEngine = new CEPEngine(inputStreamName, outputStreamNames, inputStreamAttributesString, outputStreamAttributesStrings, queryString);

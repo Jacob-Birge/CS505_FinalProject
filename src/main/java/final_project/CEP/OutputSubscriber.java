@@ -27,20 +27,13 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
     public void onMessage(Object msg) {
         try {
             if (streamName == "RTR1OutStream"){
-                /*String printStr = "";
-                Type typeOf = new TypeToken<List<Map<String,Map<String,Object>>>>(){}.getType();
-                List<Map<String,Map<String,Object>>> msgList = gson.fromJson((String)msg, typeOf);
-                for (Map<String,Map<String,Object>> map : msgList){
-                    printStr += (String)map.get("event").get("s1ZipCode");
-                    printStr += ":" + ((Double)map.get("event").get("count")).toString() + ",";
-                }*/
-                String msgStr = (String)msg;
-                msgStr.replaceAll("\"s2count\":2", Color.GREEN+"\"s2count\":2"+Color.RESET);
-                System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msgStr + " " + streamName);
-                System.out.println("");
-            }
-            else if (streamName == "RTR2OutStream"){
-                System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + msg + " " + streamName);
+                Type typeOf = new TypeToken<Map<String,Map<String,Object>>>(){}.getType();
+                Map<String,Map<String,Object>> msgList = gson.fromJson((String)msg, typeOf);
+                String zipCode = (String)msgList.get("event").get("zip_code");
+                long alertTime = System.currentTimeMillis();
+                Launcher.alertZipcodes.put(zipCode, alertTime);
+                
+                System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + (String)msg + " " + streamName);
                 System.out.println("");
             }
             else if (streamName == "RTR3OutStream"){
