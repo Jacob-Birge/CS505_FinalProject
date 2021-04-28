@@ -21,6 +21,7 @@ public class Launcher {
 
     public static Integer app_status_code = 0;
     public static Boolean ableToReset = false;
+    public static final Integer alertWindowSecs = 15;
     public static ConcurrentHashMap<String, Long> alertZipcodes = new ConcurrentHashMap<String, Long>();
     public static Long posCount = 0l;
     public static Long negCount = 0l;
@@ -71,15 +72,16 @@ public class Launcher {
         String[] outputStreamAttributesStrings =    {"zip_code string, e1count long, e2count long", 
                                                     "count long, isNeg bool"};
 
+        String winSecStr = Launcher.alertWindowSecs.toString();
         String rtr1Query = " " +
-                " from PatientInStream[patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6']#window.time(15 sec)" +
+                " from PatientInStream[patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6']#window.time("+winSecStr+" sec)" +
                 " select zip_code, count() as count" +
                 " group by zip_code" +
                 " insert into tempStream1;" +
 
                 " from every( e1=tempStream1 )" +
                 " -> e2=tempStream1[e1.zip_code==zip_code and (2*e1.count) <= count]" +
-                " within 15 sec" +
+                " within "+winSecStr+" sec" +
                 " select e1.zip_code as zip_code, e1.count as e1count, e2.count as e2count" +
                 " insert into RTR1OutStream;";
 

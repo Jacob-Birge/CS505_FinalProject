@@ -104,21 +104,7 @@ public class API {
         try {
             logToConsole("zipalertlist");
 
-            ArrayList<String> ziplist = new ArrayList<>();
-            ArrayList<String> zipsToRemove = new ArrayList<>();
-            long curTime = System.currentTimeMillis();
-            for (String zipcode : Launcher.alertZipcodes.keySet()){
-                if (curTime - Launcher.alertZipcodes.get(zipcode) > 15000){
-                    zipsToRemove.add(zipcode);
-                }
-                else{
-                    ziplist.add(zipcode);
-                }
-            }
-
-            for (String zipcode : zipsToRemove){
-                Launcher.alertZipcodes.remove(zipcode);
-            }
+            ArrayList<String> ziplist = filterAlertZips();
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();
@@ -149,7 +135,9 @@ public class API {
         try {
             logToConsole("alertlist");
 
-            Boolean stateInAlert = false;
+            ArrayList<String> ziplist = filterAlertZips();
+
+            Boolean stateInAlert = (ziplist.size() >= 5);
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();
@@ -165,6 +153,25 @@ public class API {
             return Response.status(500).entity(exceptionAsString).build();
         }
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
+    }
+
+    private ArrayList<String> filterAlertZips(){
+        ArrayList<String> ziplist = new ArrayList<>();
+        ArrayList<String> zipsToRemove = new ArrayList<>();
+        long curTime = System.currentTimeMillis();
+        for (String zipcode : Launcher.alertZipcodes.keySet()){
+            if (curTime - Launcher.alertZipcodes.get(zipcode) > (Launcher.alertWindowSecs*1000)){
+                zipsToRemove.add(zipcode);
+            }
+            else{
+                ziplist.add(zipcode);
+            }
+        }
+
+        for (String zipcode : zipsToRemove){
+            Launcher.alertZipcodes.remove(zipcode);
+        }
+        return ziplist;
     }
 
     @GET
