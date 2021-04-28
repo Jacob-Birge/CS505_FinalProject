@@ -15,8 +15,13 @@ public class CEPEngine {
     private SiddhiManager siddhiManager;
     private SiddhiAppRuntime siddhiAppRuntime;
     private Map<String,String> topicMap;
+    private String inputStreamName;
+    private String[] outputStreamName;
+    private String inputStreamAttributesString;
+    private String[] outputStreamAttributesString;
+    private String queryString;
 
-    public CEPEngine() {
+    public CEPEngine(String inputStreamName, String[] outputStreamName, String inputStreamAttributesString, String[] outputStreamAttributesString,String queryString) {
         Class JsonClassSource = null;
         Class JsonClassSink = null;
 
@@ -40,9 +45,17 @@ public class CEPEngine {
         siddhiManager = new SiddhiManager();
         siddhiManager.setExtension("sourceMapper:json",JsonClassSource);
         siddhiManager.setExtension("sinkMapper:json",JsonClassSink);
+
+        this.inputStreamName = inputStreamName;
+        this.outputStreamName = outputStreamName;
+        this.inputStreamAttributesString = inputStreamAttributesString;
+        this.outputStreamAttributesString = outputStreamAttributesString;
+        this.queryString = queryString;
+
+        createCEP();
     }
 
-    public void createCEP(String inputStreamName, String[] outputStreamName, String inputStreamAttributesString, String[] outputStreamAttributesString,String queryString) {
+    private void createCEP() {
         try {
             String inputTopic = UUID.randomUUID().toString();
 
@@ -113,4 +126,10 @@ public class CEPEngine {
         return sinkString;
     }
 
+    public void reset(){
+        siddhiAppRuntime.shutdown();
+        siddhiManager.shutdown();
+
+        createCEP();
+    }
 }

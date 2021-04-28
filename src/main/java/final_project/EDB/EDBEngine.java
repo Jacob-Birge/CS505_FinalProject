@@ -1,6 +1,5 @@
 package final_project.EDB;
 
-import com.google.gson.reflect.TypeToken;
 import org.apache.commons.dbcp2.*;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPool;
@@ -9,10 +8,7 @@ import javax.sql.DataSource;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.lang.reflect.Type;
-import java.nio.file.Paths;
 import java.sql.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -420,5 +416,13 @@ public class EDBEngine {
             ex.printStackTrace();
         }
         return null;
+    }
+
+    // Empties APP.PATIENTINFO
+    public boolean purgePatientInfo(){
+        try {
+            return true;
+        } catch (Exception ex) {}
+        return false;
     }
 }

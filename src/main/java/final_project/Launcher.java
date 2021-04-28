@@ -4,20 +4,15 @@ import final_project.CEP.CEPEngine;
 import final_project.EDB.EDBEngine;
 import final_project.Topics.TopicConnector;
 import final_project.Utils.Color;
-import final_project.httpfilters.AuthenticationFilter;
 import org.glassfish.grizzly.http.server.HttpServer;
 import org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 
 import javax.ws.rs.core.UriBuilder;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 
 public class Launcher {
@@ -25,17 +20,26 @@ public class Launcher {
     public static final String API_SERVICE_KEY = "12142047"; //Change this to your student id
     public static final int WEB_PORT = 9000;
     public static String inputStreamName = null;
-    public static double accessCount = -1;
+
+    public static Integer app_status_code = 0;
+    public static Boolean ableToReset = false;
+    public static ConcurrentSkipListSet<String> alertZipcodes = new ConcurrentSkipListSet<String>();
+    public static Long posCount = 0l;
+    public static Long negCount = 0l;
 
     public static TopicConnector topicConnector;
 
     public static CEPEngine cepEngine = null;
-    public static Long posCount = 0l;
-    public static Long negCount = 0l;
 
     public static EDBEngine edbEngine = null;
 
     public static void main(String[] args) throws IOException {
+        app_status_code = 0;
+        ableToReset = false;
+        //Embedded HTTP initialization
+        startServer();
+        System.out.println();
+
         //Embedded database initialization
         System.out.println(Color.CYAN+"Starting EDB..."+Color.RESET);
         edbEngine = new EDBEngine();
@@ -62,10 +66,6 @@ public class Launcher {
         System.out.println();
 
         System.out.println(Color.CYAN+"Starting CEP..."+Color.RESET);
-        //Embedded database initialization
-        cepEngine = new CEPEngine();
-
-        //START MODIFY
         inputStreamName = "PatientInStream";
         String inputStreamAttributesString = "first_name string, last_name string, mrn string, zip_code string, patient_status_code string";
 
@@ -73,7 +73,7 @@ public class Launcher {
         String[] outputStreamAttributesStrings = {"e1count long, e2count long", "count long", "count long, isNeg bool"};
 
         String rtr1Query = " " +
-                " from PatientInStream#window.time(15 sec)" +
+                " from PatientInStream[patient_status_code == '2' or patient_status_code == '5' or patient_status_code == '6']#window.time(15 sec)" +
                 " select count() as count" +
                 " insert into tempStream;" +
 
@@ -83,27 +83,10 @@ public class Launcher {
                 " select e1.count as e1count, e2.count as e2count" +
                 " insert into RTR1OutStream;";
 
-        /*String rtr1Query = " " +
-                " from e1=PatientInStream#window.time(1 sec), e2=PatientInStream#window.time(30 sec)" +
-                " select e1.zip_code as zip_code, count(e1.mrn) as count1" +
-                " group by e1.zip_code" +
-                " insert into RTR1OutStream;";/*
-
-                " from " +
-                " select zip_code, count() as count" +
-                " group by zip_code" +
-                " insert into RTR1OutStream;";/*
-
-                " from every e1=tempStream1, e2=tempStream2" +
-                " select e2.zip_code as s2zip_code, e1.count as s1count, s2.count as s2count" +
-                " insert into RTR1OutStream;";
-
-                /*" from PatientInStream#window.timeBatch(1 sec) as s1 right outer join PatientInStream#window.timeBatch(30 sec) as s2 on s1.mrn==s2.mrn" +
-                " select s2.zip_code as s2zip_code, count(s1.mrn) as s1count, count(s2.mrn) as s2count" +
-                " group by s2.zip_code" +
-                " insert into RTR1OutStream;";*/
-
-        String rtr2Query = "";
+        String rtr2Query = " ";/* +
+                " from PatientInStream" +
+                " select count() as count" +
+                " insert into RTR2OutStream;";*/
 
         String rtr3Query = " " +
                 " from PatientInStream[patient_status_code == '1' or patient_status_code == '4']" +
@@ -115,15 +98,9 @@ public class Launcher {
 
         String queryString = rtr1Query + " " + rtr2Query + " " + rtr3Query;
 
-        //END MODIFY
-
-        cepEngine.createCEP(inputStreamName, outputStreamNames, inputStreamAttributesString, outputStreamAttributesStrings, queryString);
-
+        //CEP initialization
+        cepEngine = new CEPEngine(inputStreamName, outputStreamNames, inputStreamAttributesString, outputStreamAttributesStrings, queryString);
         System.out.println(Color.GREEN+"CEP Started..."+Color.RESET);
-        System.out.println();
-        
-        //Embedded HTTP initialization
-        startServer();
         System.out.println();
 
         //starting Collector
@@ -132,6 +109,9 @@ public class Launcher {
         topicConnector.connect();
         System.out.println(Color.GREEN+"TopicConnector Started..."+Color.RESET);
         System.out.println();
+
+        app_status_code = 1;
+        ableToReset = true;
 
         try {
             while (true) {
@@ -173,4 +153,34 @@ public class Launcher {
         }
     }
 
+    //TODO: causes issues when rabbitmq is unresponsive
+    public static boolean reset(){
+        try {
+            ableToReset = false;
+            app_status_code = 0;
+            System.out.println(Color.CYAN+"Pausing TopicConnector..."+Color.RESET);
+            if (!topicConnector.disconnect()) return false;
+
+            System.out.println(Color.CYAN+"Resetting CEP..."+Color.RESET);
+            cepEngine.reset();
+
+            System.out.println(Color.CYAN+"Purging Patient Info..."+Color.RESET);
+            if (!edbEngine.purgePatientInfo()) return false;
+            
+            alertZipcodes.clear();
+            posCount = 0l;
+            negCount = 0l;
+
+            System.out.println(Color.CYAN+"Reconnecting TopicConnector..."+Color.RESET);
+            topicConnector.connect();
+
+            System.gc();
+
+            ableToReset = true;
+            app_status_code = 1;
+            return true;
+        }
+        catch (Exception ex){}
+        return false;
+    }
 }

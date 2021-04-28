@@ -1,7 +1,6 @@
 package final_project.httpcontrollers;
 
 import com.google.gson.Gson;
-import final_project.CEP.accessRecord;
 import final_project.Launcher;
 
 import javax.inject.Inject;
@@ -13,7 +12,6 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import final_project.Launcher;
 
 @Path("/api")
 public class API {
@@ -47,7 +45,7 @@ public class API {
             responseMap.put("team_name", "CEB: complex event brocessors");
             responseMap.put("team_member_sids", "[\"12257232\", \"12142047\"]");
             //TODO: logic for if app is on or off
-            responseMap.put("app_status_code","0");
+            responseMap.put("app_status_code",Launcher.app_status_code.toString());
 
             responseString = gson.toJson(responseMap);
 
@@ -71,10 +69,15 @@ public class API {
         String responseString = "{}";
         try {
             logToConsole("reset");
-
+            String code = "0";
+            try{
+                if (Launcher.ableToReset && Launcher.reset()){
+                    code = "1";
+                }
+            } catch (Exception ex){}
             //generate a response
             Map<String,String> responseMap = new HashMap<>();
-            responseMap.put("reset_status_code", "0");
+            responseMap.put("reset_status_code", code);
             responseString = gson.toJson(responseMap);
         } catch (Exception ex) {
             StringWriter sw = new StringWriter();
@@ -234,13 +237,6 @@ public class API {
             logToConsole("getpatient");
 
             String hospitalID = Launcher.edbEngine.getPatientLocation(mrn);
-            if(hospitalID.equals("0")) {
-                hospitalID = "Home";
-            }
-
-            if(hospitalID.equals("-1")) {
-                hospitalID = "WARNING: CANNOT ACCOMODATE. ALL HOSPITALS FULL.";
-            }
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();

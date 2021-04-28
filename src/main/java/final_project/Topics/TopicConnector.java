@@ -11,7 +11,6 @@ import com.rabbitmq.client.DeliverCallback;
 import final_project.Launcher;
 
 import java.lang.reflect.Type;
-import java.sql.ResultSet;
 import java.util.List;
 import java.util.Map;
 
@@ -20,6 +19,8 @@ public class TopicConnector {
     private Gson gson;
     final Type typeOf = new TypeToken<List<Map<String,String>>>(){}.getType();
     private final Integer maxNumTuples = 1000;
+    private static Connection connection;
+    private static Channel channel;
 
     private String EXCHANGE_NAME = "patient_data";
 
@@ -35,13 +36,13 @@ public class TopicConnector {
             String virtualhost = "3";
 
             ConnectionFactory factory = new ConnectionFactory();
-            factory.setRequestedHeartbeat(30);
+            factory.setRequestedHeartbeat(10);
             factory.setHost(hostname);
             factory.setUsername(username);
             factory.setPassword(password);
             factory.setVirtualHost(virtualhost);
-            Connection connection = factory.newConnection();
-            Channel channel = connection.createChannel();
+            connection = factory.newConnection();
+            channel = connection.createChannel();
 
             channel.exchangeDeclare(EXCHANGE_NAME, "topic");
             String queueName = channel.queueDeclare().getQueue();
@@ -113,4 +114,12 @@ public class TopicConnector {
         }
 }
 
+    public boolean disconnect(){
+        try {
+            channel.close();
+            connection.close();
+            return true;
+        }
+        catch (Exception ex){ return false; }
+    }
 }
