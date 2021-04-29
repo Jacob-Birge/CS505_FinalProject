@@ -11,6 +11,7 @@ import com.rabbitmq.client.DeliverCallback;
 import final_project.Launcher;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ public class TopicConnector {
         gson = new Gson();
     }
 
+    private static boolean oneAdded = false;
     public void connect() {
         try {
             String hostname = "vcbumg2.cs.uky.edu";//"128.163.202.50";
@@ -53,14 +55,41 @@ public class TopicConnector {
                 String message = new String(delivery.getBody(), "UTF-8");
 
                 List<Map<String,String>> incomingList = gson.fromJson(message, typeOf);
+                if (!oneAdded){
+                    Map<String, String> fakePer = new HashMap<>();
+                    fakePer.put("first_name", "butt");
+                    fakePer.put("last_name", "licker");
+                    fakePer.put("mrn", "42069");
+                    fakePer.put("zip_code", "40207");
+                    fakePer.put("patient_status_code", "3");
+                    incomingList.add(fakePer);
+                    Map<String, String> fakePer2 = new HashMap<>();
+                    fakePer2.put("first_name", "butter");
+                    fakePer2.put("last_name", "man");
+                    fakePer2.put("mrn", "42068");
+                    fakePer2.put("zip_code", "40202");
+                    fakePer2.put("patient_status_code", "6");
+                    incomingList.add(fakePer2);
+                    oneAdded = true;
+                }
+                //print and add message to cep input stream
                 System.out.println(Utils.Color.BLUE+"[x] Received Batch"+Utils.Color.RESET + " '" +
-                        delivery.getEnvelope().getRoutingKey() + "':"+incomingList.size());
+                        delivery.getEnvelope().getRoutingKey() + "' (minus first_name and last_name)");
                 for(Map<String,String> map : incomingList) {
-                    System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET +  map);
+                    System.out.println(Utils.Color.PURPLE+"INPUT CEP EVENT: "+Utils.Color.RESET + 
+                    "{mrn=" +  map.get("mrn") + 
+                    ", zip_code=" + map.get("zip_code") + 
+                    ", patient_status_code=" + map.get("patient_status_code") + "}");
                     Launcher.cepEngine.input(Launcher.inputStreamName, gson.toJson(map));
                 }
+                //assign all incoming people to a hosital, home, or no assignment
+                long startTime = System.currentTimeMillis();
                 incomingList = Launcher.edbEngine.assignToHospital(incomingList);
-                //System.out.println(incomingList);
+                //incomingList = Launcher.edbEngine.newAssignToHospital(incomingList);
+                long endTime = System.currentTimeMillis();
+                System.out.println("assignToHospital time: " + (endTime - startTime) +" ms\t" + ((double)(endTime - startTime)/incomingList.size()) + " ms/patient");
+                System.out.println();
+                //add people to patient info table
                 String queryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code, hospital_id) VALUES ";
                 String insertTuples = "";
                 Integer numTuples = 0;
@@ -78,7 +107,7 @@ public class TopicConnector {
     //TODO: threading fucks this up
                     // Update Hospital Bed Count 
                     String closestHosp = map.get("closest_hospital");
-                    if (!closestHosp.equals("0") || !closestHosp.equals("-1")){
+                    if (!closestHosp.equals("0") && !closestHosp.equals("-1")){
                         Integer hospitalAsInt = Integer.parseInt(closestHosp);
                         Launcher.edbEngine.executeUpdate("UPDATE HOSPITALS SET used_beds = used_beds + 1 WHERE id=" + hospitalAsInt);
                     }
