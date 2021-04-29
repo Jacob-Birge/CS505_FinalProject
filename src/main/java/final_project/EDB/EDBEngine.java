@@ -9,7 +9,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -365,6 +368,84 @@ public class EDBEngine {
         return null;
     }
 
+    // assigns a patient to a hospital if neccessary.
+    public List<Map<String,String>> newAssignToHospital(List<Map<String,String>> incoming){
+        try {
+            ArrayList<Map<String, Integer>> zipToIndexs = new ArrayList<>();
+            ArrayList<String> clauses = new ArrayList<>();
+            ArrayList<Map<String, Integer>> critZipToIndexs = new ArrayList<>();
+            ArrayList<String> critClauses = new ArrayList<>();
+            for(int i=0; i<incoming.size(); i++) {
+                Map<String,String> map = incoming.get(i);
+                // if patient needs a hospital
+                if (map.get("patient_status_code") == "3" || map.get("patient_status_code") == "5") {
+                    String zipCode = map.get("zip_code");
+                    boolean inserted = false;
+                    for (int j=0; j<zipToIndexs.size(); j++){
+                        Map<String, Integer> zipToIndex = zipToIndexs.get(j);
+                        if (!zipToIndex.keySet().contains(zipCode)){
+                            zipToIndex.put(zipCode, i);
+                            clauses.set(j, clauses.get(j) + " OR zip=" + zipCode);
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    if (!inserted){
+                        Map<String, Integer> zipToIndex = new HashMap<String, Integer>();
+                        zipToIndex.put(zipCode, i);
+                        zipToIndexs.add(zipToIndex);
+                        clauses.add("zip=" + zipCode);
+                    }
+                }
+                else if (map.get("patient_status_code") == "6") {
+                    String zipCode = map.get("zip_code");
+                    boolean inserted = false;
+                    for (int j=0; j<critZipToIndexs.size(); j++){
+                        Map<String, Integer> zipToIndex = critZipToIndexs.get(j);
+                        if (!zipToIndex.keySet().contains(zipCode)){
+                            zipToIndex.put(zipCode, i);
+                            critClauses.set(j, critClauses.get(j) + " OR zip=" + zipCode);
+                            inserted = true;
+                            break;
+                        }
+                    }
+                    if (!inserted){
+                        Map<String, Integer> zipToIndex = new HashMap<String, Integer>();
+                        zipToIndex.put(zipCode, i);
+                        critZipToIndexs.add(zipToIndex);
+                        critClauses.add("zip=" + zipCode);
+                    }
+                }
+                //stay home
+                else {
+                    map.put("closest_hospital", "0");
+                }
+                map.put("closest_hospital", "0");
+            }
+            for (int i=0; i<clauses.size(); i++){
+                String clause = clauses.get(i);
+                Map<String, Integer> map = zipToIndexs.get(i);
+                String queryString = "SELECT MIN(h.id) as hid, zip FROM APP.HOSPITALS as h WHERE " + 
+                                    clause + " AND beds > used_beds GROUP BY zip";
+                System.out.println(queryString);
+                try(Connection conn = ds.getConnection()) {
+                    try (Statement stmt = conn.createStatement()) {
+                        try(ResultSet rs = stmt.executeQuery(queryString)) {
+                            while(rs.next()) {
+                                System.out.println(rs.getString("hid"));
+                            }
+                        }
+                    }
+                }
+            }
+            System.out.println();
+            return incoming;
+        } catch(Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
+
     // finds a patient's closest hospital
     public String findClosestHospital(String zip, Boolean isStatus6) {
         Integer zipc = Integer.parseInt(zip);
@@ -385,31 +466,8 @@ public class EDBEngine {
                             return rs.getString("hid");
                         }
                         else {
+                            System.out.println("Zip Not Found: "+zipc+"\n");
                             return "-1"; // zip not in zipdistance CSV
-
-                            // System.out.println("Zip Not Found: "+zipc+"\n");
-                            // String alternateHosp = "";
-                            // if (isStatus6) {
-                            //     alternateHosp = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE h.trauma != 'NOT AVAILABLE' " +
-                            //                     "AND h.beds > h.used_beds ORDER BY used_beds ASC";
-                            // }
-                            // else {
-                            //     alternateHosp = "SELECT h.id AS hid FROM APP.HOSPITALS AS h WHERE h.beds > h.used_beds " +
-                            //                     "ORDER BY used_beds ASC";
-                            // }
-                            
-                            // try(Connection con = ds.getConnection()) {
-                            //     try (Statement stamt = con.createStatement()) {
-                            //         try(ResultSet rst = stamt.executeQuery(alternateHosp)) {
-                            //             if(rst.next()) {
-                            //                 return rst.getString("hid");
-                            //             }
-                            //             else {
-                            //                 return "-1";
-                            //             }
-                            //         }
-                            //     }
-                            // }
                         }
                     }
                 }
