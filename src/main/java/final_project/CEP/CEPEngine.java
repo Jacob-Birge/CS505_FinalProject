@@ -55,7 +55,7 @@ public class CEPEngine {
         createCEP();
     }
 
-    private void createCEP() {
+    private boolean createCEP() {
         try {
             String inputTopic = UUID.randomUUID().toString();
 
@@ -84,11 +84,11 @@ public class CEPEngine {
 
             //Starting event processing
             siddhiAppRuntime.start();
-
+            return true;
             } catch (Exception ex) {
             ex.printStackTrace();
         }
-
+        return false;
     }
 
     public void input(String streamName, String jsonPayload) {
@@ -126,10 +126,15 @@ public class CEPEngine {
         return sinkString;
     }
 
-    public void reset(){
-        siddhiAppRuntime.shutdown();
-        siddhiManager.shutdown();
+    public boolean reset(){
+        try {
+            siddhiAppRuntime.shutdown();
+            siddhiManager.shutdown();
 
-        createCEP();
+            if (!createCEP()) return false;
+            return true;
+        }
+        catch (Exception ex) {}
+        return false;
     }
 }

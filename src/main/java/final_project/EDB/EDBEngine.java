@@ -466,7 +466,7 @@ public class EDBEngine {
                             return rs.getString("hid");
                         }
                         else {
-                            System.out.println("Zip Not Found: "+zipc+"\n");
+                            //System.out.println("Zip Not Found: "+zipc+"\n");
                             return "-1"; // zip not in zipdistance CSV
                         }
                     }

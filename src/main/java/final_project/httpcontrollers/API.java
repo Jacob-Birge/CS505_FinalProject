@@ -63,7 +63,6 @@ public class API {
     @GET
     @Path("/reset")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO:
     public Response MF2() {
         String responseString = "{}";
         try {
@@ -92,7 +91,6 @@ public class API {
     @GET
     @Path("/zipalertlist")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO:
     /**
      * API alert on zipcode that is in alert state based on growth of postive cases. We define alert state as a growth of 2X over a 15 
      * second time interval. That is, if t0 - t14 there were 10 patients, and t15-t29 there were 25 patients, an alert state would be 
@@ -124,7 +122,6 @@ public class API {
     @GET
     @Path("/alertlist")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO:
     /**
      * API alert on statewide when at least five zipcodes are in alert state (based on RT1) within the same 15 second window.
      * @param authKey
@@ -167,7 +164,7 @@ public class API {
                 ziplist.add(zipcode);
             }
         }
-
+        
         for (String zipcode : zipsToRemove){
             Launcher.alertZipcodes.remove(zipcode);
         }
@@ -177,7 +174,6 @@ public class API {
     @GET
     @Path("/testcount")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO:
     /**
      * API statewide positive and negative test counter
      * @param authKey
@@ -196,38 +192,6 @@ public class API {
             Map<String,String> responseMap = new HashMap<>();
             responseMap.put("positive_test", pos_test_count.toString());
             responseMap.put("negative_test", neg_test_count.toString());
-            responseString = gson.toJson(responseMap);
-
-        } catch (Exception ex) {
-            StringWriter sw = new StringWriter();
-            ex.printStackTrace(new PrintWriter(sw));
-            String exceptionAsString = sw.toString();
-            ex.printStackTrace();
-
-            return Response.status(500).entity(exceptionAsString).build();
-        }
-        return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
-    }
-
-    @GET
-    @Path("/of1")
-    @Produces(MediaType.APPLICATION_JSON)
-    //TODO:
-    /**
-     * API to route pertson to the best fit hospital based on patient status, provider status, distance (zipcode). 
-     * Continuously process incoming messages from incoming exchange.  Store results using a method that can be used 
-     * to report routing path in subsequent APIs
-     * @param authKey
-     * @return
-     */
-    public Response OF1() {
-        String responseString = "{}";
-        try {
-            logToConsole("of1");
-
-            //generate a response
-            Map<String,String> responseMap = new HashMap<>();
-            responseMap.put("reset_status_code", "0");
             responseString = gson.toJson(responseMap);
 
         } catch (Exception ex) {

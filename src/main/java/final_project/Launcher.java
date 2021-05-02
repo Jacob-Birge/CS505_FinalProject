@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Launcher {
     public static final int WEB_PORT = 9000;
     public static String inputStreamName = null;
+    public static final Boolean addFakePeople = false;
 
     public static Integer app_status_code = 0;
     public static Boolean ableToReset = false;
@@ -46,22 +47,13 @@ public class Launcher {
         System.out.println();
 
         //Loading given csvs into embedded database
-        long startTime = System.currentTimeMillis();
         loadCSV("kyzipdistance");
-        long endTime = System.currentTimeMillis();
-        System.out.println("Load time: " + ((endTime - startTime)/1000.0) + " seconds");
         System.out.println();
 
-        startTime = System.currentTimeMillis();
         loadCSV("kyzipdetails");
-        endTime = System.currentTimeMillis();
-        System.out.println("Load time: " + ((endTime - startTime)/1000.0) + " seconds");
         System.out.println();
 
-        startTime = System.currentTimeMillis();
         loadCSV("hospitals");
-        endTime = System.currentTimeMillis();
-        System.out.println("Load time: " + ((endTime - startTime)/1000.0) + " seconds");
         System.out.println();
 
         System.out.println(Color.CYAN+"Starting CEP..."+Color.RESET);
@@ -150,16 +142,16 @@ public class Launcher {
         }
     }
 
-    //TODO: causes issues when rabbitmq is unresponsive
     public static boolean reset(){
         try {
             ableToReset = false;
             app_status_code = 0;
+            System.out.println();
             System.out.println(Color.CYAN+"Pausing TopicConnector..."+Color.RESET);
             if (!topicConnector.disconnect()) return false;
 
             System.out.println(Color.CYAN+"Resetting CEP..."+Color.RESET);
-            cepEngine.reset();
+            if (!cepEngine.reset()) return false;
 
             System.out.println(Color.CYAN+"Purging Patient Info..."+Color.RESET);
             if (!edbEngine.purgePatientInfo()) return false;
@@ -169,7 +161,7 @@ public class Launcher {
             negCount = 0l;
 
             System.out.println(Color.CYAN+"Reconnecting TopicConnector..."+Color.RESET);
-            topicConnector.connect();
+            if (!topicConnector.connect()) return false;
 
             System.gc();
 
