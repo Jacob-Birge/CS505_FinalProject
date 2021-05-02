@@ -1,9 +1,6 @@
 package final_project.CEP;
 
 import java.lang.reflect.Type;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import final_project.Launcher;
@@ -32,6 +29,8 @@ public class OutputSubscriber implements InMemoryBroker.Subscriber {
                 String zipCode = (String)msgList.get("event").get("zip_code");
                 long alertTime = System.currentTimeMillis();
                 Launcher.alertZipcodes.put(zipCode, alertTime);
+
+                Launcher.filterAlertZips();
                 
                 System.out.println(Color.CYAN+"OUTPUT EVENT: "+Color.RESET + (String)msg + " " + streamName);
                 System.out.println("");

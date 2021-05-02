@@ -65,6 +65,7 @@ public class API {
     @Produces(MediaType.APPLICATION_JSON)
     public Response MF2() {
         String responseString = "{}";
+        Map<String,String> responseMap = new HashMap<>();
         try {
             logToConsole("reset");
             String code = "0";
@@ -74,16 +75,11 @@ public class API {
                 }
             } catch (Exception ex){}
             //generate a response
-            Map<String,String> responseMap = new HashMap<>();
             responseMap.put("reset_status_code", code);
             responseString = gson.toJson(responseMap);
         } catch (Exception ex) {
-            StringWriter sw = new StringWriter();
-            ex.printStackTrace(new PrintWriter(sw));
-            String exceptionAsString = sw.toString();
-            ex.printStackTrace();
-
-            return Response.status(500).entity(exceptionAsString).build();
+            responseMap.put("reset_status_code", "0");
+            responseString = gson.toJson(responseMap);
         }
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
     }
@@ -102,7 +98,7 @@ public class API {
         try {
             logToConsole("zipalertlist");
 
-            ArrayList<String> ziplist = filterAlertZips();
+            ArrayList<String> ziplist = Launcher.filterAlertZips();
 
             //generate a response
             Map<String,String> responseMap = new HashMap<>();
@@ -132,7 +128,7 @@ public class API {
         try {
             logToConsole("alertlist");
 
-            ArrayList<String> ziplist = filterAlertZips();
+            ArrayList<String> ziplist = Launcher.filterAlertZips();
 
             Boolean stateInAlert = (ziplist.size() >= 5);
 
@@ -150,25 +146,6 @@ public class API {
             return Response.status(500).entity(exceptionAsString).build();
         }
         return Response.ok(responseString).header("Access-Control-Allow-Origin", "*").build();
-    }
-
-    private ArrayList<String> filterAlertZips(){
-        ArrayList<String> ziplist = new ArrayList<>();
-        ArrayList<String> zipsToRemove = new ArrayList<>();
-        long curTime = System.currentTimeMillis();
-        for (String zipcode : Launcher.alertZipcodes.keySet()){
-            if (curTime - Launcher.alertZipcodes.get(zipcode) > (Launcher.alertWindowSecs*1000)){
-                zipsToRemove.add(zipcode);
-            }
-            else{
-                ziplist.add(zipcode);
-            }
-        }
-        
-        for (String zipcode : zipsToRemove){
-            Launcher.alertZipcodes.remove(zipcode);
-        }
-        return ziplist;
     }
 
     @GET
@@ -208,7 +185,6 @@ public class API {
     @GET
     @Path("/getpatient/{mrn}")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO:
     /**
      * API search by mrn patients location (home or specific hospital)
      * @param authKey
@@ -242,7 +218,6 @@ public class API {
     @GET
     @Path("/gethospital/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    //TODO:
     /**
      * API to report hospital patient numbers
      * @param authKey

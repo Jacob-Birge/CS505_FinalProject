@@ -38,7 +38,7 @@ public class TopicConnector {
             String virtualhost = "3";
 
             ConnectionFactory factory = new ConnectionFactory();
-            factory.setRequestedHeartbeat(5);
+            factory.setRequestedHeartbeat(30);
             factory.setHost(hostname);
             factory.setUsername(username);
             factory.setPassword(password);
@@ -84,40 +84,31 @@ public class TopicConnector {
                 }
                 //assign all incoming people to a hosital, home, or no assignment
                 incomingList = Launcher.edbEngine.assignToHospital(incomingList);
-                //incomingList = Launcher.edbEngine.newAssignToHospital(incomingList);
                 //add people to patient info table
-                String queryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code, hospital_id) VALUES ";
+                String insertQueryBegin = "INSERT INTO PATIENTINFO (first_name, last_name, mrn, zipcode, patient_status_code, hospital_id) VALUES ";
                 String insertTuples = "";
-                Integer numTuples = 0;
+                Integer numInsertTuples = 0;
+                //loop across incoming patients
                 for(Map<String,String> map : incomingList) {
                     if (insertTuples != "")
                         insertTuples += ",";
                     insertTuples += "('"+map.get("first_name")+"','"+map.get("last_name")+"','"+map.get("mrn")+"','"+map.get("zip_code")+"','"+map.get("patient_status_code")+"',"+map.get("closest_hospital")+")";
-                    numTuples++;
-                    if (numTuples >= maxNumTuples){
-                        String insertQuery = queryBegin + insertTuples;
+                    numInsertTuples++;
+                    //if exceeding max number for insert, go ahead and insert
+                    if (numInsertTuples >= maxNumTuples){
+                        String insertQuery = insertQueryBegin + insertTuples;
                         Launcher.edbEngine.executeUpdate(insertQuery);
                         insertTuples = "";
-                        numTuples = 0;
+                        numInsertTuples = 0;
                     }
-                    
-                    // Update Hospital Bed Count 
-                    String closestHosp = map.get("closest_hospital");
-                    if (!closestHosp.equals("0") && !closestHosp.equals("-1")){
-                        Integer hospitalAsInt = Integer.parseInt(closestHosp);
-                        Launcher.edbEngine.executeUpdate("UPDATE HOSPITALS SET used_beds = used_beds + 1 WHERE id=" + hospitalAsInt);
-                    }
-                    
                 }
-                if (numTuples > 0){
-                    String insertQuery = queryBegin + insertTuples;
+                if (numInsertTuples > 0){
+                    String insertQuery = insertQueryBegin + insertTuples;
                     Launcher.edbEngine.executeUpdate(insertQuery);
                     insertTuples = "";
-                    numTuples = 0;
+                    numInsertTuples = 0;
                 }
                 System.out.println("");
-
-                
             };
 
             channel.basicConsume(queueName, true, deliverCallback, consumerTag -> {

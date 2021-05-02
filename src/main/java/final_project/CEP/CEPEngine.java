@@ -1,6 +1,5 @@
 package final_project.CEP;
 
-import com.google.gson.Gson;
 import io.siddhi.core.SiddhiAppRuntime;
 import io.siddhi.core.SiddhiManager;
 import io.siddhi.core.stream.output.sink.InMemorySink;
