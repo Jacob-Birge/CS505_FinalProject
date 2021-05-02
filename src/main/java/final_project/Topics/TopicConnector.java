@@ -104,7 +104,7 @@ public class TopicConnector {
                         insertTuples = "";
                         numTuples = 0;
                     }
-    //TODO: threading fucks this up
+                    
                     // Update Hospital Bed Count 
                     String closestHosp = map.get("closest_hospital");
                     if (!closestHosp.equals("0") && !closestHosp.equals("-1")){
